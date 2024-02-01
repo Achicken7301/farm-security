@@ -1,0 +1,18 @@
+{
+  "files.associations": {
+    "gpio.h": "c",
+    "esp_netif.h": "c",
+    "esp_wifi_types.h": "c",
+    "esp_wifi_types_private.h": "c",
+    "queue.h": "c",
+    "nvs_flash.h": "c",
+    "fsm_wifi.h": "c",
+    "esp_tls_crypto.h": "c",
+    "wifi_event_handler.h": "c",
+    "string": "c",
+    "format": "c",
+    "esp_event.h": "c",
+    "esp_http_server.h": "c",
+    "global.h": "c"
+  },
+}
