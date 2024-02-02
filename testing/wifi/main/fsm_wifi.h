@@ -8,9 +8,9 @@
 #include <esp_log.h>
 #include <esp_netif.h>
 #include <esp_wifi.h>
+#include <ets_sys.h>
 #include <nvs_flash.h>
 #include <string.h>
-// #include <ets_sys.h>
 
 /* The examples use WiFi configuration that you can set via project
    configuration menu.

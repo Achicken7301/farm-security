@@ -22,13 +22,12 @@ extern char ROUTER_SSID[MAX_ROUTER_SSID];
 extern char ROUTER_PASS[MAX_ROUTER_PASS];
 extern uint8_t ROUTER_CHANNEL;
 
-/* WIFI_event_handler */
 #define EXAMPLE_ESP_MAXIMUM_RETRY 5
 
 int is_router_config();
 int is_router_connected();
 
-// void AP_event_handler(void *, esp_event_base_t, int32_t, void *);
+/* WIFI_event_handler */
 void WIFI_EVENT_handler(void *, esp_event_base_t, int32_t, void *);
 void IP_EVENT_handler(void *, esp_event_base_t, int32_t, void *);
 

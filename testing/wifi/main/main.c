@@ -2,8 +2,8 @@
 
 void app_main(void)
 {
-  while (1)
-  {
-    fsm_wifi();
-  }
+    while (1)
+    {
+        fsm_wifi();
+    }
 }
