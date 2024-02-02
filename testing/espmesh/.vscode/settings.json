@@ -1,0 +1,21 @@
+{
+  "files.associations": {
+    "stdio.h": "c",
+    "gpio.h": "c",
+    "fsm_espmesh.h": "c",
+    "thread": "c",
+    "string.h": "c",
+    "esp_mesh.h": "c",
+    "esp_wifi.h": "c",
+    "esp_event.h": "c",
+    "queue.h": "c",
+    "esp_event_legacy.h": "c",
+    "esp_netif.h": "c",
+    "esp_netif_ip_addr.h": "c",
+    "endian.h": "c",
+    "esp_mac.h": "c",
+    "esp_log.h": "c",
+    "esp_mesh_internal.h": "c",
+    "main.h": "c"
+  }
+}
