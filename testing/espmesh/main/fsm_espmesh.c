@@ -17,7 +17,10 @@ static mesh_addr_t id;
 static uint16_t mesh_layer;
 static mesh_addr_t mesh_parent_addr;
 static int last_layer = -1;
+
 static bool is_mesh_connected = false;
+int get_IsMeshConnect() { return is_mesh_connected; }
+void set_IsMeshConnect(int value) { is_mesh_connected = value; }
 
 const char *get_EspMeshState()
 {
@@ -104,10 +107,8 @@ void fsm_espmesh()
     break;
     case MESH_START:
     {
-
         /* mesh start */
         ESP_ERROR_CHECK(esp_mesh_start());
-
         set_EspMeshState(MESH_RELAX);
     }
     break;
@@ -116,6 +117,10 @@ void fsm_espmesh()
     }
     break;
     case MESH_RELAX:
+    {
+    }
+    break;
+    case MESH_DEINIT:
     {
     }
     break;
@@ -181,25 +186,6 @@ void mesh_event_handler(void *arg, esp_event_base_t event_base,
             (mesh_event_child_connected_t *)event_data;
         ESP_LOGI(MESH_TAG, "<MESH_EVENT_CHILD_CONNECTED>aid:%d, " MACSTR "",
                  child_connected->aid, MAC2STR(child_connected->mac));
-
-        /*         mesh_addr_t add;
-                mesh_data_t data;
-                int flag;
-
-                esp_mesh_recv(&add.addr, &data, 2000, &flag, NULL, 1);
-                printf("data flag: %d\n", flag);
-                printf("ROOT recv data from:\t");
-                for (int i = 0; i < 6; i++)
-                {
-                    printf("%x:", add.addr[i]);
-                }
-                printf("\n");
-                printf("ROOT recv data:\t");
-                for (int i = 0; i < data.size; i++)
-                {
-                    printf("%c", data.data[i]);
-                }
-                printf("\n"); */
     }
     break;
     case MESH_EVENT_PARENT_CONNECTED:
@@ -219,18 +205,6 @@ void mesh_event_handler(void *arg, esp_event_base_t event_base,
                  MAC2STR(id.addr), connected->duty);
         last_layer = mesh_layer;
         is_mesh_connected = true;
-
-        /* if i parent is connected, send hello to it */
-        /* mesh_data_t data = {
-            .data = (uint8_t *)"HELLO ROOT",
-            .proto = MESH_PROTO_BIN,
-            .size = sizeof("HELLO ROOT!"),
-            .tos = MESH_TOS_P2P,
-        };
-        // strcpy(data.data, "HELLO ROOT!");
-        printf("Data sent is %s\n", data.data);
-        esp_err_t err = esp_mesh_send(NULL, &data, 0, NULL, 1);
-        printf("Success sent to root\n"); */
     }
     break;
     case MESH_EVENT_PARENT_DISCONNECTED:
@@ -278,8 +252,8 @@ void mesh_event_handler(void *arg, esp_event_base_t event_base,
     }
     break;
     default:
-        printf("NEW mesh_event_handler event_id: %d\n", event_id);
-
+        // printf("NEW mesh_event_handler event_id: %d\n", event_id);
+        ESP_LOGI(MESH_TAG, "mesh_event_handler event_id: %d", event_id);
         break;
     }
 }
