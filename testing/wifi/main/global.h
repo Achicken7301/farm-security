@@ -1,30 +1,12 @@
 #ifndef __GLOBAL_VARIABLES__
 #define __GLOBAL_VARIABLES__
+#include <stdint.h>
 #include <stdio.h>
 
-typedef enum
-{
-    /* WIFI STATES */
-    WIFI_INIT,
-    WIFI_START,
-    WIFI_IDLE, /* I DONT KNOW WHY THIS EXIST??? */
+#define MAX_ROUTER_SSID 32
+#define MAX_ROUTER_PASS 64
+extern char ROUTER_SSID[MAX_ROUTER_SSID];
+extern char ROUTER_PASS[MAX_ROUTER_PASS];
+extern uint8_t ROUTER_CHANNEL;
 
-    /* AP CONFIGURATION */
-    WIFI_AP_INIT,
-    WIFI_AP_CONFIGURATION,
-
-    /* HTTP SERVER */
-    WEB_SERVER,
-    CLOSE_WEB_SERVER,
-
-    /* CONNECT TO ROUTER APSTA MODE */
-    WIFI_STA_INIT,
-    WIFI_STA_CONFIGURATION,
-
-} TransitionState;
-
-extern TransitionState currentState;
-
-void setState(TransitionState);
-TransitionState getState();
 #endif // End #ifndef __GLOBAL_VARIABLES__

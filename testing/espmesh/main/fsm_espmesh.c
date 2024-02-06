@@ -19,7 +19,7 @@ static mesh_addr_t mesh_parent_addr;
 static int last_layer = -1;
 
 static bool is_mesh_connected = false;
-int get_IsMeshConnect() { return is_mesh_connected; }
+int isMeshConnect() { return is_mesh_connected; }
 void set_IsMeshConnect(int value) { is_mesh_connected = value; }
 
 const char *get_EspMeshState()
@@ -112,8 +112,103 @@ void fsm_espmesh()
         set_EspMeshState(MESH_RELAX);
     }
     break;
+    case MESH_RECV:
+    {
+        /* Mesh NOT connected */
+        if (!isMeshConnect())
+        {
+            break;
+        }
+
+        /* Data init */
+        uint8_t rx_buf[1460] = {
+            0,
+        };
+        mesh_addr_t from;
+        mesh_data_t rx_data = {.size = 1500, .data = rx_buf};
+        int flag;
+        mesh_opt_t opt;
+
+        /* Check buffers */
+        mesh_rx_pending_t pending;
+        esp_mesh_get_rx_pending(&pending);
+        if (pending.toSelf > 0 || pending.toDS > 0)
+        {
+            esp_err_t err =
+                esp_mesh_recv(&from, &rx_data, portMAX_DELAY, &flag, &opt, 1);
+
+            /* Need error trace */
+            if (err == ESP_OK)
+            {
+                switch (rx_data.proto)
+                {
+                case MESH_PROTO_BIN:
+                {
+                    ESP_LOGI(MESH_TAG, "MESH_PROTO_BIN");
+                    if (rx_data.size == 0)
+                    {
+                        ESP_LOGI(MESH_TAG, "data.size: %d", rx_data.size);
+                        break;
+                    }
+
+                    /* @todo: Do more things when recv data */
+                    ESP_LOGI(MESH_TAG, "data.data: %s", rx_data.data);
+                }
+                break;
+                /* Node's station transmits datato root's AP */
+                case MESH_PROTO_AP:
+                {
+                    ESP_LOGI(MESH_TAG, "MESH_PROTO_AP");
+                }
+                break;
+                /* sending from root AP -> Node's STA */
+                case MESH_PROTO_STA:
+                {
+                    ESP_LOGI(MESH_TAG, "MESH_PROTO_STA");
+                }
+                break;
+                default:
+                    ESP_LOGI(MESH_TAG, "New data protocol: 0x%x",
+                             rx_data.proto);
+                    break;
+                }
+            }
+            else
+            {
+                ESP_LOGI(MESH_TAG, "Recv error code: 0x%x\n", err);
+            }
+        }
+    }
+    break;
     case MESH_SEND:
     {
+
+        if (!isMeshConnect())
+        {
+            break;
+        }
+
+        char *tx_data;
+
+        /* Try to use function without free it */
+        int size = asprintf(&tx_data,
+                            "{"
+                            "  \"from\": %s,"
+                            "  \"with\": %s,"
+                            "  \"hours\": %d"
+                            "}",
+                            "KHANG", "LOVE", 12);
+        mesh_data_t data = {
+            .data = (uint8_t *)tx_data,
+            data.proto = MESH_PROTO_BIN,
+            // data.proto = MESH_PROTO_AP,
+            .size = size,
+            .tos = MESH_TOS_P2P,
+        };
+        ESP_LOGI(MESH_TAG, "data size: %d\t%s", data.size, data.data);
+        esp_mesh_send(NULL, &data, MESH_PROTO_JSON, NULL, 1);
+
+        free(tx_data);
     }
     break;
     case MESH_RELAX:

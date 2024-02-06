@@ -1,19 +1,12 @@
-/**
- * @file wifi_event_handler.c
- * @author achicken7301 (buiankhang130301@gmail.com)
- * @brief
- * @version 0.1
- * @date 2024-02-01
- *
- * @copyright Copyright (c) 2024
- *
- */
 #include "wifi_event_handler.h"
 
 char ROUTER_SSID[MAX_ROUTER_SSID];
 char ROUTER_PASS[MAX_ROUTER_PASS];
+
+/* How to store this variables in flash??? */
 static int is_router_config_t = 0;
 static int is_router_connected_t = 0;
+
 static const char *TAG_softAP = "wifi softAP";
 static const char *TAG_STA = "wifi STA";
 uint8_t ROUTER_CHANNEL = 0;
@@ -42,13 +35,10 @@ const char *resp_str =
     "<form action='/submit'>\n"
     "  <label for='router_ssid'>ROUTER SSID:</label>\n"
     "  <input type='text' id='router_ssid' name='router_ssid'><br><br>\n"
-
     "  <label for='router_pass'>ROUTER PASSWORD:</label>\n"
     "  <input type='text' id='router_pass' name='router_pass'><br><br>\n"
-
     "  <label for='router_channel'>ROUTER CHANNEL:</label>\n"
-    "  <input type='text' id='router_channel' name='router_channel'><br><br>\n"
-
+    "  <input type='text' id='router_channel'name='router_channel'><br><br>\n"
     "  <input type='submit' value='Submit'>\n"
     "</form>\n"
     "</body>\n"
@@ -139,7 +129,7 @@ void WIFI_EVENT_handler(void *arg, esp_event_base_t event_base,
         is_router_config_t = 0;
         is_router_connected_t = 0;
         // currentState = WIFI_STA_CONFIGURATION;
-        setState(WIFI_STA_CONFIGURATION);
+        set_wifiState(WIFI_STA_CONFIGURATION);
     }
     break;
     case WIFI_EVENT_AP_STACONNECTED:
@@ -167,8 +157,6 @@ void WIFI_EVENT_handler(void *arg, esp_event_base_t event_base,
 void IP_EVENT_handler(void *arg, esp_event_base_t event_base, int32_t event_id,
                       void *event_data)
 {
-    printf("IP_EVENT_handler: event_base: %s\tevent_id:%d\n", event_base,
-           event_id);
     switch (event_id)
     {
     case IP_EVENT_STA_GOT_IP:
@@ -180,6 +168,8 @@ void IP_EVENT_handler(void *arg, esp_event_base_t event_base, int32_t event_id,
     }
 
     default:
+        printf("IP_EVENT_handler: event_base: %s\tevent_id:%d\n", event_base,
+               event_id);
         break;
     }
 }

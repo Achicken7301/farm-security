@@ -21,11 +21,44 @@ static httpd_handle_t server = NULL;
 esp_netif_t *esp_netif_create_default_wifi;
 
 /* This for  WIFI_STA_CONFIGURATION*/
-static esp_event_handler_instance_t instance_any_id;
-static esp_event_handler_instance_t instance_got_ip;
+// static esp_event_handler_instance_t instance_any_id;
+// static esp_event_handler_instance_t instance_got_ip;
+
+const char *get_wifiState(TransitionState state)
+{
+    switch (state)
+    {
+    case WIFI_INIT:
+        return "WIFI_INIT";
+    case WIFI_START:
+        return "WIFI_START";
+    case WIFI_IDLE:
+        return "WIFI_IDLE";
+    case WIFI_AP_INIT:
+        return "WIFI_AP_INIT";
+    case WIFI_AP_CONFIGURATION:
+        return "WIFI_AP_CONFIGURATION";
+    case WEB_SERVER:
+        return "WEB_SERVER";
+    case CLOSE_WEB_SERVER:
+        return "CLOSE_WEB_SERVER";
+    case WIFI_STA_INIT:
+        return "WIFI_STA_INIT";
+    case WIFI_STA_CONFIGURATION:
+        return "WIFI_STA_CONFIGURATION";
+    default:
+        return "UNKNOWN_STATE";
+    }
+}
+
+void set_wifiState(TransitionState state)
+{
+    printf("Current State in FSM_WIFI:\t%s\n", get_wifiState(state));
+    currentState = state;
+}
 
 /**
- * @brief Finite State Machine implement init wifi mode when init esp32 at
+ * @brief Finite State Machine implement init softAP mode when init esp32 at
  * start-up.
  *
  */
@@ -42,7 +75,7 @@ void fsm_wifi()
         esp_wifi_init(&cfg);
 
         // currentState = WIFI_AP_INIT;
-        setState(WIFI_AP_INIT);
+        set_wifiState(WIFI_AP_INIT);
     }
 
     break;
@@ -53,7 +86,7 @@ void fsm_wifi()
         ESP_ERROR_CHECK(esp_event_handler_instance_register(
             WIFI_EVENT, ESP_EVENT_ANY_ID, &WIFI_EVENT_handler, NULL, NULL));
         ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
-        setState(WIFI_AP_CONFIGURATION);
+        set_wifiState(WIFI_AP_CONFIGURATION);
     }
     break;
     case WIFI_AP_CONFIGURATION:
@@ -96,20 +129,20 @@ void fsm_wifi()
         if (is_router_config() && is_router_connected())
         {
             ESP_ERROR_CHECK(esp_wifi_start());
-            setState(CLOSE_WEB_SERVER);
+            set_wifiState(CLOSE_WEB_SERVER);
             break;
         }
 
         if (!is_router_config() && !is_router_connected())
         {
             ESP_ERROR_CHECK(esp_wifi_start());
-            setState(WEB_SERVER);
+            set_wifiState(WEB_SERVER);
             break;
         }
 
         if (is_router_config() && !is_router_connected())
         {
-            setState(WIFI_STA_INIT);
+            set_wifiState(WIFI_STA_INIT);
             break;
         }
     }
@@ -131,7 +164,7 @@ void fsm_wifi()
 
         /* TESTING: NEED TO CHANGE THIS */
         // currentState = WIFI_STA_INIT;
-        setState(WIFI_STA_INIT);
+        set_wifiState(WIFI_STA_INIT);
     }
     break;
     case CLOSE_WEB_SERVER:
@@ -145,7 +178,7 @@ void fsm_wifi()
             ESP_LOGI(TAG_webserver,
                      "From CLOSE_WEB_SERVER switch to WIFI_IDLE");
             // currentState = WIFI_IDLE;
-            setState(WIFI_IDLE);
+            set_wifiState(WIFI_IDLE);
         }
     }
     break;
@@ -158,7 +191,7 @@ void fsm_wifi()
         ESP_LOGI(TAG_webserver, "Set esp_netif_create_default_wifi_sta");
         esp_netif_create_default_wifi = esp_netif_create_default_wifi_sta();
         ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
-        setState(WIFI_STA_CONFIGURATION);
+        set_wifiState(WIFI_STA_CONFIGURATION);
     }
     break;
     case WIFI_STA_CONFIGURATION:
@@ -204,7 +237,7 @@ void fsm_wifi()
         ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &sta_config));
 
         // currentState = WIFI_AP_CONFIGURATION;
-        setState(WIFI_START);
+        set_wifiState(WIFI_START);
     }
     break;
     case WIFI_IDLE:

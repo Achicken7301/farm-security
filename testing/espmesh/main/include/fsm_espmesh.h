@@ -10,8 +10,6 @@
 #include <nvs_flash.h>
 #include <string.h>
 
-#define DEFAULT_MESH_CONFIG 1
-
 /* Use HTTPD to configure this */
 #define CONFIG_MESH_CHANNEL 5
 #define CONFIG_MESH_ROUTER_SSID "Vnpt - Nha"
@@ -26,6 +24,7 @@ typedef enum
     MESH_CONFIGURATION,
     MESH_START,
     MESH_SEND,
+    MESH_RECV,
     MESH_DEINIT,
     MESH_RELAX,
 } EspMeshState;
@@ -41,7 +40,7 @@ void ip_event_handler(void *event_handler_arg, esp_event_base_t event_base,
 void set_EspMeshState(EspMeshState);
 const char *get_EspMeshState();
 
-int get_IsMeshConnect();
+int isMeshConnect();
 void set_IsMeshConnect(int);
 
 void fsm_espmesh();

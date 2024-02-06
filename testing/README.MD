@@ -8,3 +8,7 @@ Goals: User can config ESP32 connect to Router using HTTPD (Apache HTTP Server).
 ## EPS MESH (ESP to ESP)
 
 ![esp_mesh](../docs/mesh_output.png)*<center>**ESP_MESH:** OUTPUT ESP ROOT MESH.</center>*
+
+## ESP32 HTTPS REQUEST
+
+**NOTE:** I need this in order to upload webpages.

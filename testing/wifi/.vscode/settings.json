@@ -16,6 +16,8 @@
     "global.h": "c",
     "task.h": "c",
     "esp_event_legacy.h": "c",
-    "string.h": "c"
+    "string.h": "c",
+    "non_blocking_socket.h": "c",
+    "fsm_tcp_server.h": "c"
   },
 }

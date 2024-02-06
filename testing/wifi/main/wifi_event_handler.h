@@ -1,8 +1,8 @@
 #ifndef __WIFI_EVENT_HANDLER_H__
 #define __WIFI_EVENT_HANDLER_H__
 
+#include "fsm_wifi.h"
 #include "global.h"
-#include "wifi_event_handler.h"
 
 #include <esp_http_server.h>
 #include <esp_log.h>
@@ -14,13 +14,11 @@
 extern httpd_uri_t root_uri;
 extern httpd_uri_t post_uri;
 
-#define WIFI_TESTING 1
-
-#define MAX_ROUTER_SSID 32
-#define MAX_ROUTER_PASS 64
-extern char ROUTER_SSID[MAX_ROUTER_SSID];
-extern char ROUTER_PASS[MAX_ROUTER_PASS];
-extern uint8_t ROUTER_CHANNEL;
+// #define MAX_ROUTER_SSID 32
+// #define MAX_ROUTER_PASS 64
+// extern char ROUTER_SSID[MAX_ROUTER_SSID];
+// extern char ROUTER_PASS[MAX_ROUTER_PASS];
+// extern uint8_t ROUTER_CHANNEL;
 
 #define EXAMPLE_ESP_MAXIMUM_RETRY 5
 

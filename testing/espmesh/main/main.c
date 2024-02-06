@@ -7,7 +7,7 @@ void mesh_task()
     while (true)
     {
         vTaskDelay(1000 / portTICK_PERIOD_MS);
-        if (get_IsMeshConnect())
+        if (isMeshConnect())
         {
             if (esp_mesh_is_root())
             {
@@ -16,7 +16,7 @@ void mesh_task()
                     0,
                 };
                 mesh_addr_t from;
-                mesh_data_t data = {.size = 1500, .data = rx_buf};
+                mesh_data_t rx_data = {.size = 1500, .data = rx_buf};
                 int flag;
                 mesh_opt_t opt;
                 mesh_rx_pending_t pending;
@@ -26,22 +26,23 @@ void mesh_task()
                 {
                     // ESP_LOGI(MESH_TAG, "Peding.toSelf %d\t Pending.toDs %d",
                     //  pending.toSelf, pending.toDS);
-                    esp_err_t err = esp_mesh_recv(&from, &data, portMAX_DELAY,
-                                                  &flag, &opt, 1);
+                    esp_err_t err = esp_mesh_recv(
+                        &from, &rx_data, portMAX_DELAY, &flag, &opt, 1);
                     if (err == ESP_OK)
                     {
 
-                        switch (data.proto)
+                        switch (rx_data.proto)
                         {
                         case MESH_PROTO_BIN:
                         {
                             ESP_LOGI(MESH_TAG, "MESH_PROTO_BIN");
-                            if (data.size == 0)
+                            if (rx_data.size == 0)
                             {
-                                ESP_LOGI(MESH_TAG, "data.size: %d", data.size);
+                                ESP_LOGI(MESH_TAG, "data.size: %d",
+                                         rx_data.size);
                                 break;
                             }
-                            ESP_LOGI(MESH_TAG, "data.data: %s", data.data);
+                            ESP_LOGI(MESH_TAG, "data.data: %s", rx_data.data);
                         }
                         break;
                         /* Node's station transmits datato root's AP */
@@ -68,9 +69,9 @@ void mesh_task()
             }
             else
             {
-                char *data_to_send;
+                char *tx_data;
 
-                int size = asprintf(&data_to_send,
+                int size = asprintf(&tx_data,
                                     "{"
                                     "  \"from\": %s,"
                                     "  \"with\": %s,"
@@ -78,7 +79,7 @@ void mesh_task()
                                     "}",
                                     "KHANG", "LOVE", 12);
                 mesh_data_t data = {
-                    .data = (uint8_t *)data_to_send,
+                    .data = (uint8_t *)tx_data,
                     // data.proto = MESH_PROTO_BIN,
                     data.proto = MESH_PROTO_AP,
                     .size = size,
@@ -86,7 +87,7 @@ void mesh_task()
                 };
                 ESP_LOGI(MESH_TAG, "data size: %d\t%s", data.size, data.data);
                 esp_mesh_send(NULL, &data, MESH_PROTO_JSON, NULL, 1);
-                // free(data_to_send);
+                free(data_to_send);
             }
         }
     }

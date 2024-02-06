@@ -1,0 +1,20 @@
+{
+    "files.associations": {
+        "fsm_tcp_server.h": "c",
+        "*.ipp": "c",
+        "thread": "c",
+        "esp_log.h": "c",
+        "socket.h": "c",
+        "sockets.h": "c",
+        "netdb.h": "c",
+        "esp_event.h": "c",
+        "esp_system.h": "c",
+        "esp_event_legacy.h": "c",
+        "esp_wifi_types.h": "c",
+        "esp_netif.h": "c",
+        "esp_netif_ip_addr.h": "c",
+        "esp_eth_netif_glue.h": "c",
+        "functional": "c",
+        "stdint.h": "c"
+    }
+}
