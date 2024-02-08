@@ -33,15 +33,8 @@ typedef enum
     TS_CLOSE
 } TcpServerState;
 
-#ifdef TCP_SERVER_DEFAULT_SETTING
 #define CONFIG_EXAMPLE_TCP_SERVER_BIND_ADDRESS "0.0.0.0"
 #define CONFIG_EXAMPLE_TCP_SERVER_BIND_PORT "5544"
-#else
-#define MAX_TCP_SERVER_BIND_ADDRESS 10
-#define MAX_TCP_SERVER_BIND_PORT 10
-extern char TCP_SERVER_BIND_ADDRESS[MAX_TCP_SERVER_BIND_ADDRESS];
-extern char TCP_SERVER_BIND_PORT[MAX_TCP_SERVER_BIND_PORT];
-#endif // End #ifdef TCP_SERVER_DEFAULT_SETTING
 
 /**
  * @brief Indicates that the file descriptor represents an invalid

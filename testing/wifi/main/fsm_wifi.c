@@ -11,11 +11,7 @@
 
 #include "fsm_wifi.h"
 TransitionState currentState = WIFI_INIT;
-
-// static const char *TAG_STA = "wifi STA";
-static const char *TAG_softAP = "wifi softAP";
-static const char *TAG_webserver = "wifi webserver";
-static httpd_handle_t server = NULL;
+httpd_handle_t server = NULL;
 
 /* This should be AP or STA or BOTH, idk lol!!! (；′⌒`) */
 esp_netif_t *esp_netif_create_default_wifi;
@@ -204,15 +200,6 @@ void fsm_wifi()
                 {
                     /*.ssid = EXAMPLE_ESP_WIFI_SSID,
                      *.password = EXAMPLE_ESP_WIFI_PASS,
-                     */
-                    .channel = ROUTER_CHANNEL,
-                    /* Authmode threshold resets to WPA2 as default if
-                     * password matches WPA2 standards (pasword len => 8). If
-                     * you want to connect the device to deprecated WEP/WPA
-                     * networks, Please set the threshold value to
-                     * WIFI_AUTH_WEP/WIFI_AUTH_WPA_PSK and set the password
-                     * with length and format matching to
-                     * WIFI_AUTH_WEP/WIFI_AUTH_WPA_PSK standards.
                      */
                     .threshold.authmode = WIFI_AUTH_WPA_WPA2_PSK,
                     .sae_pwe_h2e = WPA3_SAE_PWE_BOTH,

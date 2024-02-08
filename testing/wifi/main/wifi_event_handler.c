@@ -4,11 +4,9 @@ char ROUTER_SSID[MAX_ROUTER_SSID];
 char ROUTER_PASS[MAX_ROUTER_PASS];
 
 /* How to store this variables in flash??? */
-static int is_router_config_t = 0;
-static int is_router_connected_t = 0;
+int is_router_config_t = 0;
+int is_router_connected_t = 0;
 
-static const char *TAG_softAP = "wifi softAP";
-static const char *TAG_STA = "wifi STA";
 uint8_t ROUTER_CHANNEL = 0;
 int s_retry_num = 0;
 
@@ -35,10 +33,10 @@ const char *resp_str =
     "<form action='/submit'>\n"
     "  <label for='router_ssid'>ROUTER SSID:</label>\n"
     "  <input type='text' id='router_ssid' name='router_ssid'><br><br>\n"
+
     "  <label for='router_pass'>ROUTER PASSWORD:</label>\n"
     "  <input type='text' id='router_pass' name='router_pass'><br><br>\n"
-    "  <label for='router_channel'>ROUTER CHANNEL:</label>\n"
-    "  <input type='text' id='router_channel'name='router_channel'><br><br>\n"
+
     "  <input type='submit' value='Submit'>\n"
     "</form>\n"
     "</body>\n"
@@ -104,12 +102,13 @@ httpd_uri_t post_uri = {
 void WIFI_EVENT_handler(void *arg, esp_event_base_t event_base,
                         int32_t event_id, void *event_data)
 {
-
     switch (event_id)
     {
     case WIFI_EVENT_STA_START:
     {
         esp_wifi_connect();
+
+        /* This is VERY COMPLEX, I need to rebuid this state below */
         is_router_connected_t = 1;
     }
     break;
@@ -123,13 +122,16 @@ void WIFI_EVENT_handler(void *arg, esp_event_base_t event_base,
         {
             esp_wifi_connect();
             s_retry_num++;
+            is_router_config_t = 0;
+            is_router_connected_t = 0;
             ESP_LOGI(TAG_STA, "retry to connect to the AP");
         }
         ESP_LOGI(TAG_STA, "connect to the AP fail");
-        is_router_config_t = 0;
-        is_router_connected_t = 0;
         // currentState = WIFI_STA_CONFIGURATION;
-        set_wifiState(WIFI_STA_CONFIGURATION);
+
+        ESP_LOGI(TAG_STA, "Switch to WEB_SERVER, wait for new SSID && PASS");
+
+        set_wifiState(WEB_SERVER);
     }
     break;
     case WIFI_EVENT_AP_STACONNECTED:
@@ -164,6 +166,7 @@ void IP_EVENT_handler(void *arg, esp_event_base_t event_base, int32_t event_id,
         ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
         ESP_LOGI(TAG_STA, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
         s_retry_num = 0;
+        is_router_connected_t = 1;
         break;
     }
 

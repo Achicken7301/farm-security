@@ -4,8 +4,6 @@ static TcpServerState tcp_state = TS_INIT;
 char rx_buffer[128];
 const char *TCP_TAG = "nonblocking-socket-server";
 struct addrinfo hints = {.ai_socktype = SOCK_STREAM};
-char TCP_SERVER_BIND_ADDRESS[MAX_SERVER_BIND_ADDRESS];
-char TCP_SERVER_BIND_PORT[MAX_SERVER_BIND_PORT];
 
 /* Just a little reminder, every things create with a start * in it, we should,
  * you know free it!!! */
@@ -177,36 +175,18 @@ void fsm_tcp_server_nonblocking()
             sock[i] = INVALID_SOCK;
         }
 
-#ifdef TCP_SERVER_DEFAULT_SETTING
         /* Translating the hostname or a string representation of an IP
            to address_info */
         int res = getaddrinfo(CONFIG_EXAMPLE_TCP_SERVER_BIND_ADDRESS,
                               CONFIG_EXAMPLE_TCP_SERVER_BIND_PORT, &hints,
                               &address_info);
-#else
-
-        /* Translating the hostname or a string representation of an IP
-           to address_info */
-        int res = getaddrinfo(TCP_SERVER_BIND_ADDRESS, TCP_SERVER_BIND_PORT,
-                              &hints, &address_info);
-#endif // End #ifdef TCP_SERVER_DEFAULT_SETTING
 
         if (res != 0 || address_info == NULL)
         {
-#ifdef TCP_SERVER_DEFAULT_SETTING
             ESP_LOGE(TCP_TAG,
                      "couldn't get hostname for `%s` "
                      "getaddrinfo() returns %d, addrinfo=%p",
                      CONFIG_EXAMPLE_TCP_SERVER_BIND_ADDRESS, res, address_info);
-#else
-
-            ESP_LOGE(TCP_TAG,
-                     "couldn't get hostname for `%s` "
-                     "getaddrinfo() returns %d, addrinfo=%p",
-                     TCP_SERVER_BIND_ADDRESS, res, address_info);
-#endif // End #ifdef TCP_SERVER_DEFAULT_SETTING
-            tcp_state = TS_ERROR;
-            break;
             // goto error;
         }
         // tcp_state = TS_CREATE_SOCKET;
@@ -256,14 +236,9 @@ void fsm_tcp_server_nonblocking()
             tcp_state = TS_ERROR;
             break;
         }
-#ifdef TCP_SERVER_DEFAULT_SETTING
         ESP_LOGI(TCP_TAG, "Socket bound on %s:%s",
                  CONFIG_EXAMPLE_TCP_SERVER_BIND_ADDRESS,
                  CONFIG_EXAMPLE_TCP_SERVER_BIND_PORT);
-#else
-        ESP_LOGI(TCP_TAG, "Socket bound on %s:%s", TCP_SERVER_BIND_ADDRESS,
-                 TCP_SERVER_BIND_PORT);
-#endif // End #ifdef TCP_SERVER_DEFAULT_SETTING
 
         tcp_state = TS_LISTEN;
     }
