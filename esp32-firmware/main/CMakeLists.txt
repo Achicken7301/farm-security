@@ -1,0 +1,2 @@
+idf_component_register(SRCS "main.c" "fsm_http_server.c" "fsm_mesh.c" "scheduler.c" "fsm_tcp_server.c" "global.c" "fsm_ap.c" "tcp_processing.c"
+                    INCLUDE_DIRS "." "include")
