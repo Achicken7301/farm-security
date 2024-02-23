@@ -17,8 +17,8 @@ static mesh_addr_t id;
 static uint16_t mesh_layer;
 static mesh_addr_t mesh_parent_addr;
 static int last_layer = -1;
-
 static bool is_mesh_connected = false;
+
 int isMeshConnect() { return is_mesh_connected; }
 void set_IsMeshConnect(int value) { is_mesh_connected = value; }
 
@@ -36,6 +36,8 @@ const char *get_EspMeshState()
         return "MESH_START";
     case MESH_SEND:
         return "MESH_SEND";
+    case MESH_RECV:
+        return "MESH_RECV";
     case MESH_RELAX:
         return "MESH_RELAX";
     default:
@@ -55,6 +57,7 @@ void fsm_espmesh()
     {
     case MESH_INIT:
     {
+        /* There is a template for this, better check that out */
         nvs_flash_init();
         /*  tcpip initialization */
         ESP_ERROR_CHECK(esp_netif_init());
@@ -64,6 +67,7 @@ void fsm_espmesh()
         /*  Wi-Fi initialization */
         wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
         ESP_ERROR_CHECK(esp_wifi_init(&config));
+
         /*  register IP events handler */
         ESP_ERROR_CHECK(esp_event_handler_register(
             IP_EVENT, IP_EVENT_STA_GOT_IP, &ip_event_handler, NULL));
@@ -87,7 +91,7 @@ void fsm_espmesh()
         /* mesh ID */
         memcpy((uint8_t *)&cfg.mesh_id, MESH_ID, 6);
         /* channel (must match the router's channel) */
-        cfg.channel = CONFIG_MESH_CHANNEL;
+        // cfg.channel = CONFIG_MESH_CHANNEL;
         /* router */
         cfg.router.ssid_len = strlen(CONFIG_MESH_ROUTER_SSID);
         memcpy((uint8_t *)&cfg.router.ssid, CONFIG_MESH_ROUTER_SSID,
@@ -114,9 +118,9 @@ void fsm_espmesh()
     break;
     case MESH_RECV:
     {
-        /* Mesh NOT connected */
-        if (!isMeshConnect())
+        if (!esp_mesh_is_root())
         {
+            set_EspMeshState(MESH_SEND);
             break;
         }
 
@@ -145,14 +149,15 @@ void fsm_espmesh()
                 case MESH_PROTO_BIN:
                 {
                     ESP_LOGI(MESH_TAG, "MESH_PROTO_BIN");
-                    if (rx_data.size == 0)
-                    {
-                        ESP_LOGI(MESH_TAG, "data.size: %d", rx_data.size);
-                        break;
-                    }
+                    // if (rx_data.size == 0)
+                    // {
+                    //     ESP_LOGI(MESH_TAG, "data.size: %d", rx_data.size);
+                    //     break;
+                    // }
 
                     /* @todo: Do more things when recv data */
-                    ESP_LOGI(MESH_TAG, "data.data: %s", rx_data.data);
+                    ESP_LOGI(MESH_TAG, "Root receive data.data: %s",
+                             rx_data.data);
                 }
                 break;
                 /* Node's station transmits datato root's AP */
@@ -183,8 +188,9 @@ void fsm_espmesh()
     case MESH_SEND:
     {
 
-        if (!isMeshConnect())
+        if (esp_mesh_is_root())
         {
+            set_EspMeshState(MESH_RECV);
             break;
         }
 
@@ -195,9 +201,8 @@ void fsm_espmesh()
                             "{"
                             "  \"from\": %s,"
                             "  \"with\": %s,"
-                            "  \"hours\": %d"
                             "}",
-                            "KHANG", "LOVE", 12);
+                            "KHANG", "LOVE");
         mesh_data_t data = {
             .data = (uint8_t *)tx_data,
             data.proto = MESH_PROTO_BIN,
@@ -205,10 +210,12 @@ void fsm_espmesh()
             .size = size,
             .tos = MESH_TOS_P2P,
         };
-        ESP_LOGI(MESH_TAG, "data size: %d\t%s", data.size, data.data);
+        ESP_LOGI(MESH_TAG, "From client send data size: %d\t%s", data.size,
+                 data.data);
         esp_mesh_send(NULL, &data, MESH_PROTO_JSON, NULL, 1);
 
         free(tx_data);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
     break;
     case MESH_RELAX:
@@ -255,6 +262,15 @@ void mesh_event_handler(void *arg, esp_event_base_t event_base,
             (mesh_event_root_address_t *)event_data;
         ESP_LOGI(MESH_TAG, "<MESH_EVENT_ROOT_ADDRESS>root address:" MACSTR "",
                  MAC2STR(root_addr->addr));
+
+        if (esp_mesh_is_root())
+        {
+            set_EspMeshState(MESH_RECV);
+        }
+        else
+        {
+            set_EspMeshState(MESH_SEND);
+        }
     }
     break;
     case MESH_EVENT_TODS_STATE:

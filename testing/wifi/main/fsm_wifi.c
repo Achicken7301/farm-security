@@ -92,7 +92,7 @@ void fsm_wifi()
                 {
                     .ssid = AP_SSID,
                     .ssid_len = strlen(AP_SSID),
-                    .channel = DEFAULT_ESP_WIFI_CHANNEL,
+                    // .channel = DEFAULT_ESP_WIFI_CHANNEL,
                     .password = AP_PASS,
                     .max_connection = EXAMPLE_MAX_STA_CONN,
                     .authmode = WIFI_AUTH_WPA_WPA2_PSK,

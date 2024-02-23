@@ -1,6 +1,9 @@
 #include "main.h"
 // const char MESH_TAG = "ESP_MESH";
 // Mesh task function
+#define IMG_WIDTH (640)
+#define IMG_LENGTH (400)
+#define IMG_RESOLUTION (IMG_WIDTH * IMG_LENGTH)
 
 void mesh_task()
 {
@@ -69,17 +72,21 @@ void mesh_task()
             }
             else
             {
-                char *tx_data;
+                // char *tx_data;
 
-                int size = asprintf(&tx_data,
-                                    "{"
-                                    "  \"from\": %s,"
-                                    "  \"with\": %s,"
-                                    "  \"hours\": %d"
-                                    "}",
-                                    "KHANG", "LOVE", 12);
+                // int size = asprintf(&tx_data,
+                //                     "{"
+                //                     "  \"from\": %s,"
+                //                     "  \"with\": %s,"
+                //                     "  \"hours\": %d"
+                //                     "}",
+                //                     "KHANG", "LOVE", 12);
+
+                uint8_t tx_buffer[IMG_RESOLUTION];
+                int size = sprintf(&tx_buffer, "From KHANG with LOVE\n");
+
                 mesh_data_t data = {
-                    .data = (uint8_t *)tx_data,
+                    .data = (uint8_t *)tx_buffer,
                     // data.proto = MESH_PROTO_BIN,
                     data.proto = MESH_PROTO_AP,
                     .size = size,
@@ -87,7 +94,7 @@ void mesh_task()
                 };
                 ESP_LOGI(MESH_TAG, "data size: %d\t%s", data.size, data.data);
                 esp_mesh_send(NULL, &data, MESH_PROTO_JSON, NULL, 1);
-                free(data_to_send);
+                // free(tx_data);
             }
         }
     }
@@ -97,7 +104,7 @@ void app_main(void)
 {
     set_EspMeshState(MESH_INIT);
     // Create a task to handle mesh events
-    xTaskCreate(&mesh_task, "mesh_task", 4096, NULL, 5, &mesh_task);
+    // xTaskCreate(&mesh_task, "mesh_task", 4096, NULL, 5, &mesh_task);
 
     while (1)
     {

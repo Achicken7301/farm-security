@@ -7,7 +7,6 @@ char ROUTER_PASS[MAX_ROUTER_PASS];
 int is_router_config_t = 0;
 int is_router_connected_t = 0;
 
-uint8_t ROUTER_CHANNEL = 0;
 int s_retry_num = 0;
 
 /**
@@ -69,8 +68,6 @@ static esp_err_t post_handler(httpd_req_t *req)
                           sizeof(ROUTER_SSID));
     httpd_query_key_value(query, "router_pass", ROUTER_PASS,
                           sizeof(ROUTER_PASS));
-    httpd_query_key_value(query, "router_channel", (char *)ROUTER_CHANNEL,
-                          sizeof(ROUTER_CHANNEL));
 
     /* Filter user input, idk if there're better ways,
     but for know im using this sImPlE tEcHnIqUiE☜(ﾟヮﾟ☜)

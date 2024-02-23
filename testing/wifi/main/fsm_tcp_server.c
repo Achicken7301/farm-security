@@ -262,8 +262,8 @@ void fsm_tcp_server_nonblocking()
     break;
     case TS_ACCEPT:
     {
-        struct sockaddr_storage
-            source_addr; // Large enough for both IPv4 or IPv6
+        // Large enough for both IPv4 or IPv6
+        struct sockaddr_storage source_addr;
         socklen_t addr_len = sizeof(source_addr);
 
         int new_sock_index = 0;

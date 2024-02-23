@@ -11,7 +11,7 @@
 #include <string.h>
 
 /* Use HTTPD to configure this */
-#define CONFIG_MESH_CHANNEL 5
+// #define CONFIG_MESH_CHANNEL 5
 #define CONFIG_MESH_ROUTER_SSID "Vnpt - Nha"
 #define CONFIG_MESH_ROUTER_PASSWD "0984012265"
 #define CONFIG_MESH_AP_CONNECTIONS 2
