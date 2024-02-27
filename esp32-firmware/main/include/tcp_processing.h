@@ -31,12 +31,13 @@ typedef union tcp_processing
 
 typedef enum
 {
-    TCPMESS_OK,
-    TCPMESS_NOT_OK,
-    TCPMESS_APPLY,
+    TCP_MESS_OK,
+    TCP_MESS_NOT_OK,
+    TCP_MESS_APPLY,
 } TcpMess_Err_t;
 
 TcpMess_Err_t process_rx_buffer(TcpMessageStructure *);
+TcpMess_Err_t process_server_data(char *);
 int strIsEqual(char *, char *);
 
 #endif // End #ifndef __TCP_PROCESSING_H__

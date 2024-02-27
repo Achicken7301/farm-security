@@ -20,6 +20,12 @@ typedef struct
     uint8_t flag;
 } vTask;
 
+typedef enum
+{
+    SCH_ERR_OK,
+    SCH_ERR_NOT_OK,
+} SchedulerError_t;
+
 vTask SCH_Tasks[SCH_MAX_TASK];
 
 void SCH_Update();

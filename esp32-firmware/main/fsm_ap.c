@@ -61,7 +61,7 @@ void fsm_ap_init()
         set_router_config(1);
 
         ESP_LOGI(AP_TAG, "Set AP to Idle");
-        set_tcpState(-99);
+        set_tcpState(AP_IDLE);
     }
     break;
 

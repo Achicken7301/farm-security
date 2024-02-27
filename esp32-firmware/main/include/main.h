@@ -6,8 +6,11 @@
 #include "fsm_ap.h"
 #include "fsm_http_server.h"
 #include "fsm_mesh.h"
+#include "fsm_sta.h"
 #include "fsm_tcp_server.h"
 #include "global.h"
 #include "scheduler.h"
+
+#include "task.h"
 
 #endif // End #ifndef __MAIN_H__

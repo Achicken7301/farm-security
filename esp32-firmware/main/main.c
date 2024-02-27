@@ -4,9 +4,9 @@ void timerInit();
 
 void app_main(void)
 {
-    nvs_flash_init();
-    esp_netif_init();
-    esp_event_loop_create_default();
+    ESP_ERROR_CHECK(nvs_flash_init());
+    ESP_ERROR_CHECK(esp_netif_init());
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     esp_wifi_init(&cfg);
 
@@ -25,7 +25,9 @@ void app_main(void)
         fsm_ap_init();
         fsm_tcp_server_nonblocking();
 #endif
+        fsm_sta_init();
         fsm_mesh();
+        SCH_Dispatch();
     }
 }
 

@@ -1,7 +1,11 @@
 #include "fsm_mesh.h"
 
-static MeshState mState = MESH_INIT;
-char *MESH_TAG = "MESH_TAG";
+#if IS_ROOT
+MeshState mState = MESH_STA_INTERFACE;
+#else
+MeshState mState = MESH_INIT;
+#endif
+
 static const uint8_t MESH_ID[6] = {0x77, 0x77, 0x77, 0x77, 0x77, 0x77};
 static mesh_addr_t id;
 static uint16_t mesh_layer;
@@ -16,17 +20,28 @@ void set_mState(MeshState state)
 
 const char *get_mState()
 {
-
     switch (mState)
     {
+    case MESH_STA_INTERFACE:
+        return "MESH_STA_INTERFACE";
+    case MESH_SOCKET_INIT:
+        return "MESH_SOCKET_INIT";
+    case MESH_SOCKET_SEND:
+        return "MESH_SOCKET_SEND";
+    case MESH_SOCKET_CLOSE:
+        return "MESH_SOCKET_CLOSE";
+    case MESH_LEAF_ROOT:
+        return "MESH_LEAF_ROOT";
     case MESH_INIT:
         return "MESH_INIT";
     case MESH_DEINIT:
         return "MESH_DEINIT";
+    case MESH_START:
+        return "MESH_START";
     case MESH_DO_NOTHING:
         return "MESH_DO_NOTHING";
     default:
-        return "UNKNOWN STATE";
+        return "UNKNOWN_MESH_STATE";
     }
 }
 
@@ -44,8 +59,8 @@ void fsm_mesh()
 #endif
 
         /*  register IP events handler */
-        ESP_ERROR_CHECK(esp_event_handler_register(
-            IP_EVENT, IP_EVENT_STA_GOT_IP, &ip_event_handler, NULL));
+        // ESP_ERROR_CHECK(esp_event_handler_register(
+        //     IP_EVENT, IP_EVENT_STA_GOT_IP, &ip_event_handler, NULL));
         ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_FLASH));
         ESP_ERROR_CHECK(esp_wifi_start());
 
@@ -66,6 +81,7 @@ void fsm_mesh()
         memcpy((uint8_t *)&cfg.router.ssid, ROUTER_SSID, cfg.router.ssid_len);
         memcpy((uint8_t *)&cfg.router.password, ROUTER_PASS,
                strlen(ROUTER_PASS));
+
         /* mesh softAP */
         cfg.mesh_ap.max_connection = MESH_AP_CONNECTION;
         memcpy((uint8_t *)&cfg.mesh_ap.password, ROUTER_PASS,
@@ -75,10 +91,17 @@ void fsm_mesh()
         ESP_ERROR_CHECK(esp_mesh_start());
 
         set_mState(MESH_DO_NOTHING);
+        // set_mState(MESH_DO_NOTHING);
     }
     break;
     case MESH_DEINIT:
     {
+        esp_mesh_stop();
+    }
+    break;
+    case MESH_START:
+    {
+        esp_mesh_start();
     }
     break;
     case MESH_DO_NOTHING:
@@ -93,12 +116,24 @@ void fsm_mesh()
 void ip_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id,
                       void *event_data)
 {
-    printf("ip_event_handler event_id: %d\n", event_id);
-    ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
-    ESP_LOGI(MESH_TAG, "<IP_EVENT_STA_GOT_IP>IP:" IPSTR,
-             IP2STR(&event->ip_info.ip));
-}
+    const char *IP_EVENT_HANDLER_TAG = "IP EVENT HANDLER";
+    switch (event_id)
+    {
+    case IP_EVENT_STA_GOT_IP:
+    {
+        ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
+        ESP_LOGI(IP_EVENT_HANDLER_TAG, "got ip:" IPSTR,
+                 IP2STR(&event->ip_info.ip));
 
+        SCH_Add(send2server, 5000, 0);
+    }
+    break;
+    default:
+        ESP_LOGI(IP_EVENT_HANDLER_TAG, "event_base: %s\tevent_id%d", event_base,
+                 event_id);
+        break;
+    }
+}
 void mesh_event_handler(void *arg, esp_event_base_t event_base,
                         int32_t event_id, void *event_data)
 {

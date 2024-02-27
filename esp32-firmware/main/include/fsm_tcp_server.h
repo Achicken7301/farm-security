@@ -7,6 +7,7 @@
 #include <esp_system.h>
 #include <netdb.h>
 #include <nvs_flash.h>
+// #include <socket.h>
 #include <string.h>
 #include <sys/socket.h>
 
@@ -19,9 +20,12 @@ https://youtu.be/XXfdzwEsxFk?si=3Ti67II62hmWGJh0&t=130
  */
 typedef enum
 {
+    /* Access Point FSM */
     AP_INIT,
     AP_DEINIT,
     AP_IDLE,
+
+    /* TCP SEVER FSM */
     TS_INIT,
     TS_CONFIG,
     TS_ERROR,

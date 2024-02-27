@@ -1,3 +1,13 @@
+/**
+ * @file fsm_http_server.c
+ * @author your name (you@domain.com)
+ * @brief This file is not using
+ * @version 0.1
+ * @date 2024-02-24
+ *
+ * @copyright Copyright (c) 2024
+ *
+ */
 #include "fsm_http_server.h"
 
 esp_event_handler_instance_t event_handler_instance;

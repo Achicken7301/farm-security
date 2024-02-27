@@ -1,3 +1,14 @@
+/**
+ * @file fsm_tcp_server.c
+ * @author your name (you@domain.com)
+ * @brief TCP server is for config mesh's router ssid&pass
+ * @version 0.1
+ * @date 2024-02-25
+ *
+ * @copyright Copyright (c) 2024
+ *
+ */
+
 #include "fsm_tcp_server.h"
 
 TcpServerState tcpState;
@@ -10,6 +21,7 @@ struct addrinfo hints = {.ai_socktype = SOCK_STREAM};
 struct addrinfo *address_info;
 const size_t max_socks = CONFIG_LWIP_MAX_SOCKETS - 1;
 int sock[CONFIG_LWIP_MAX_SOCKETS - 1];
+
 int sock_pos = 0;
 int try_receive_length = 0;
 int listen_sock = INVALID_SOCK;
@@ -368,36 +380,39 @@ void fsm_tcp_server_nonblocking()
                     /* PROCESS DATA THROUGH THIS */
                     TcpMessageStructure tx_buff_temp;
                     strcpy(tx_buff_temp.data, rx_buffer);
-                    if (process_rx_buffer(&tx_buff_temp) == TCPMESS_APPLY)
+                    if (process_rx_buffer(&tx_buff_temp) == TCP_MESS_APPLY)
                     {
                         tcp_mess_apply = 1;
                         // set_tcpState(TS_DEINIT);
                         break;
                     }
 
-                    // // Received some data -> echo back
-                    // ESP_LOGI(TCP_TAG, "[sock=%d]: Received %.*s", sock[i],
-                    // len,
-                    //          rx_buffer);
+                    // Received some data -> echo back
+                    ESP_LOGI(TCP_TAG, "[sock=%d]: Received %.*s", sock[i], len,
+                             rx_buffer);
 
+                    const char data_echo_back[] =
+                        "Server receive successfully\r\n";
                     // len = socket_send(TCP_TAG, sock[i], rx_buffer, len);
-                    // if (len < 0)
-                    // {
-                    //     // Error occurred on write to this socket -> close it
-                    //     // and mark invalid
-                    //     ESP_LOGI(TCP_TAG,
-                    //              "[sock=%d]: socket_send() returned %d -> "
-                    //              "closing the socket",
-                    //              sock[i], len);
-                    //     close(sock[i]);
-                    //     sock[i] = INVALID_SOCK;
-                    // }
-                    // else
-                    // {
-                    //     // Successfully echoed to this socket
-                    //     ESP_LOGI(TCP_TAG, "[sock=%d]: Written %.*s", sock[i],
-                    //              len, rx_buffer);
-                    // }
+                    len = socket_send(TCP_TAG, sock[i], data_echo_back,
+                                      sizeof(data_echo_back));
+                    if (len < 0)
+                    {
+                        // Error occurred on write to this socket -> close it
+                        // and mark invalid
+                        ESP_LOGI(TCP_TAG,
+                                 "[sock=%d]: socket_send() returned %d -> "
+                                 "closing the socket",
+                                 sock[i], len);
+                        close(sock[i]);
+                        sock[i] = INVALID_SOCK;
+                    }
+                    else
+                    {
+                        // Successfully echoed to this socket
+                        ESP_LOGI(TCP_TAG, "[sock=%d]: Written %.*s", sock[i],
+                                 len, rx_buffer);
+                    }
                 }
 
             } // one client's socket
@@ -405,6 +420,7 @@ void fsm_tcp_server_nonblocking()
 
         if (tcp_mess_apply == 1)
         {
+            /* Close all connection */
             set_tcpState(TS_DEINIT);
             break;
         }
@@ -448,7 +464,12 @@ void fsm_tcp_server_nonblocking()
         ESP_LOGI(TCP_TAG, "Close all TCP connection");
         for (int i = 0; i < max_socks; ++i)
         {
-            close(sock[i]);
+            if (sock[i] != INVALID_SOCK)
+            {
+                shutdown(sock[i], 0);
+                close(sock[i]);
+                sock[i] = INVALID_SOCK;
+            }
         }
 
         set_tcpState(AP_DEINIT);

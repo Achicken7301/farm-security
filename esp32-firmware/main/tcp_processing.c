@@ -1,5 +1,12 @@
 #include "tcp_processing.h"
 
+/**
+ * @brief TCP server process user input
+ *
+ *
+ * @param rx_buff
+ * @return
+ */
 TcpMess_Err_t process_rx_buffer(TcpMessageStructure *rx_buff)
 {
     /* TODO: I HAVE NO IDEA WHAT IM DOING */
@@ -29,7 +36,7 @@ TcpMess_Err_t process_rx_buffer(TcpMessageStructure *rx_buff)
     if (!strIsEqual(code, CODE_SET))
     {
         ESP_LOGI(TCP_TAG, "Wrong Error Code");
-        return TCPMESS_NOT_OK;
+        return TCP_MESS_NOT_OK;
     }
 
     if (strIsEqual(var, VAR_SSID))
@@ -37,30 +44,33 @@ TcpMess_Err_t process_rx_buffer(TcpMessageStructure *rx_buff)
 
         // strcpy(ROUTER_SSID, var_data);
         memcpy(ROUTER_SSID, var_data, sizeof(ROUTER_SSID));
-
-        ESP_LOGI(TCP_TAG, "%s vs 'Vnpt - Nha': %s", ROUTER_SSID,
-                 (strIsEqual(ROUTER_SSID, "Vnpt - Nha") ? "true" : "false"));
         ESP_LOGI(TCP_TAG, "Success set ROUTER_SSID to %s", var_data);
 
-        return TCPMESS_OK;
+        return TCP_MESS_OK;
     }
 
     if (strIsEqual(var, VAR_PASS))
     {
         strcpy(ROUTER_PASS, var_data);
-        ESP_LOGI(TCP_TAG, "%s vs '0984012265': %s", ROUTER_PASS,
-                 (strIsEqual(ROUTER_PASS, "0984012265") ? "true" : "false"));
         ESP_LOGI(TCP_TAG, "Success set ROUTER_PASS to %s", var_data);
-        return TCPMESS_OK;
+        return TCP_MESS_OK;
     }
 
     if (strIsEqual(var, VAR_APPLY))
     {
-        return TCPMESS_APPLY;
+        return TCP_MESS_APPLY;
     }
 
-    return TCPMESS_NOT_OK;
+    return TCP_MESS_NOT_OK;
 }
+
+/**
+ * @brief Process server reponse
+ *
+ * @return TcpMess_Err_t
+ */
+TcpMess_Err_t process_server_data(char *rx_buff) { return TCP_MESS_OK; }
+
 /**
  * @brief Compair 2 string
  *

@@ -1,5 +1,9 @@
 {
     "files.associations": {
-        "fsm_tcp_server.h": "c"
+        "fsm_tcp_server.h": "c",
+        "random": "c",
+        "socket.h": "c",
+        "sockets.h": "c",
+        "*.ipp": "c"
     }
 }
