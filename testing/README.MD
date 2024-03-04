@@ -9,6 +9,12 @@ Goals: User can config ESP32 connect to Router using HTTPD (Apache HTTP Server).
 
 ![esp_mesh](../docs/mesh_output.png)*<center>**ESP_MESH:** OUTPUT ESP ROOT MESH.</center>*
 
-## ESP32 HTTPS REQUEST
+## CAMERA_EXAMPLE
 
-**NOTE:** I need this in order to upload webpages.
+This is an example using `esp_camera.h` module to test OV2640 camera.
+
+
+## Camera_tcp_client
+
+Take picture from camera as formated as jpeg, then send to server Ipv4 ip_addr
+![cam_tcp_client](../docs//received_picture.jpg)
