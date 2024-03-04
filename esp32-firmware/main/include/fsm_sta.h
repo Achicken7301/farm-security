@@ -25,8 +25,9 @@
 #define RE_SEND_MESS_TIME 5000
 
 /* Need to be free(payload) */
-#define TX_BUFF_MAX 1024
+#define TX_BUFF_MAX (32)
 
 void fsm_sta_init();
+MeshError_t root_sendImage2server();
 
 #endif // End #ifndef __FSM_STA_H__

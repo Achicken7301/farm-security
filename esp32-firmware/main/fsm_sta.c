@@ -93,33 +93,12 @@ void fsm_sta_init()
     break;
     case MESH_SOCKET_SEND:
     {
-        // err = send(sock, root_tx_buff, sizeof(root_tx_buff), 0);
-        int file_size;
-        char payload[50];
-        file_size = sprintf(payload, "%zu", pic->len);
-
-        /* Send pic size in bytes */
-        // err = send(sock, &root_tx_buff, file_size, 0);
-        send(sock, &payload, file_size, 0);
-
-        /* Send pic data every byte,
-         * TODO: This is UN-Optimize, each package should
-         * contain more data in single packet send*/
-
-        for (size_t i = 0; i < pic->len; i++)
+        if (root_sendImage2server() == MESH_ROOT_SEND2SERVER_FAIL)
         {
-            err = send(sock, &pic->buf[i], sizeof(pic->buf[i]), 0);
-            if (err < 0)
-            {
-                ESP_LOGE(MESH_TAG, "Error occurred during sending: errno %d",
-                         errno);
-
-                // ESP_LOGE(MESH_TAG, "Try after %d seconds",
-                // RE_SEND_MESS_TIME); SCH_Add(send2server, RE_SEND_MESS_TIME,
-                // 0);
-                set_mState(MESH_SOCKET_CLOSE);
-                break;
-            }
+            ESP_LOGE(MESH_TAG, "Error occurred during sending: errno %d",
+                     errno);
+            set_mState(MESH_SOCKET_CLOSE);
+            break;
         }
 
         ESP_LOGI(MESH_TAG, "Send success");
@@ -137,7 +116,6 @@ void fsm_sta_init()
         // Error occurred during receiving
         if (len < 0)
         {
-            ESP_LOGE(MESH_TAG, "recv failed: errno %d", errno);
             set_mState(MESH_SOCKET_SEND);
             break;
         }
@@ -164,7 +142,6 @@ void fsm_sta_init()
         ESP_LOGE(MESH_TAG, "Shutting down socket and restarting...");
         shutdown(sock, 0);
         close(sock);
-
         sock = -1;
 
         set_cState(CAM_CLEAR_PIC);
@@ -178,4 +155,45 @@ void fsm_sta_init()
     default:
         break;
     }
+}
+
+/**
+ * @brief Get global pic and send to server through tcp socket,
+ * I'll explain ~the algorithm~ this later, not that hard.
+ *
+ */
+MeshError_t root_sendImage2server()
+{
+    /* Send image bytes */
+    char payload[50];
+    // int file_size = sprintf(payload, "%zu", pic->len);
+    int file_size = sprintf(payload, "%zu", pic->len);
+    send(sock, payload, file_size, 0);
+
+    int package = 0;
+    for (package = 0; package < pic->len / TX_BUFF_MAX; package++)
+    {
+        err = send(sock, &pic->buf[package * (TX_BUFF_MAX)], TX_BUFF_MAX, 0);
+
+        if (err < 0)
+        {
+            ESP_LOGE(FSM_CAMERA_TAG, "FAIL SENDING Erro: 0x%x", err);
+            return MESH_ROOT_SEND2SERVER_FAIL;
+        }
+        /* Better check receive */
+    }
+
+    /* Send last package */
+    int bytes_left = pic->len % TX_BUFF_MAX;
+    err = send(sock, &pic->buf[package * TX_BUFF_MAX], bytes_left, 0);
+
+    if (err < 0)
+    {
+        ESP_LOGE(FSM_CAMERA_TAG, "FAIL SENDING last package: %d, Erro: 0x%x",
+                 package, err);
+        return MESH_ROOT_SEND2SERVER_FAIL;
+    }
+    printf("total package: %d\n", package);
+
+    return MESH_ROOT_SEND2SERVER_SUCCESS;
 }

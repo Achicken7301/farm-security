@@ -29,13 +29,6 @@ typedef union tcp_processing
     };
 } TcpMessageStructure;
 
-typedef enum
-{
-    TCP_MESS_OK,
-    TCP_MESS_NOT_OK,
-    TCP_MESS_APPLY,
-} TcpMess_Err_t;
-
 TcpMess_Err_t process_rx_buffer(TcpMessageStructure *);
 TcpMess_Err_t process_server_data(char *);
 int strIsEqual(char *, char *);

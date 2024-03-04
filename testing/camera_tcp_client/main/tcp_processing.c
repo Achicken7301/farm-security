@@ -20,7 +20,8 @@ TcpMess_Err_t process_rx_buffer(TcpMessageStructure *rx_buff)
 
     ESP_LOGI(TCP_TAG, "Code:%s\tvar:%s\tvar_data:%s", code, var, var_data);
 
-    /* Real data of every tcp is some thing like <user-input>\r\n. THERE always
+    /* Real data of every tcp is some thing like <user-input>\r\n. THERE
+    always
      * \r\n at the end, so be carefull.
      * This is a sImPle fUnCtIon, I'll Implement this later.
      */

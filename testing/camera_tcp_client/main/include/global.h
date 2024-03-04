@@ -1,10 +1,10 @@
 #ifndef __GLOBAL_H__
 #define __GLOBAL_H__
 
-#define USE_TCP_SERVER 0
 #define USE_HTTP_SERVER 0
+#define USE_TCP_SERVER 1
 #define USE_MESH 1
-#define USE_CAMERA 1
+#define USE_CAMERA 0
 
 #define IS_ROOT 1
 
@@ -22,6 +22,23 @@ extern char ROUTER_PASS[MAX_ROUTER_PASS];
 #define AP_PASS "khang123"
 #define EXAMPLE_ESP_MAXIMUM_RETRY 3
 #define MAX_STA_CONNECTION 2
+
+/* The compiler wont let me define in `fsm_mesh.h` */
+typedef enum
+{
+    MESH_NOT_ROOT,
+    MESH_IS_ROOT,
+    MESH_SUCCESS,
+    MESH_ROOT_SEND2SERVER_FAIL,
+    MESH_ROOT_SEND2SERVER_SUCCESS,
+} MeshError_t;
+
+typedef enum
+{
+    TCP_MESS_OK,
+    TCP_MESS_NOT_OK,
+    TCP_MESS_APPLY,
+} TcpMess_Err_t;
 
 extern const char *TCP_TAG;
 extern const char *MESH_TAG;

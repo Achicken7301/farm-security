@@ -45,12 +45,14 @@ typedef enum
 
 extern MeshState mState;
 
-typedef enum
-{
-    MESH_NOT_ROOT,
-    MESH_IS_ROOT,
-    MESH_SUCCESS,
-} MeshError;
+// typedef enum
+// {
+//     MESH_NOT_ROOT,
+//     MESH_IS_ROOT,
+//     MESH_SUCCESS,
+//     MESH_ROOT_SEND2SERVER_FAIL,
+//     MESH_ROOT_SEND2SERVER_SUCCESS,
+// } MeshError_t;
 
 void mesh_event_handler(void *event_handler_arg, esp_event_base_t event_base,
                         int32_t event_id, void *event_data);

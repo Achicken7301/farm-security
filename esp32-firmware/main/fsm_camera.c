@@ -84,11 +84,13 @@ static camera_config_t camera_config = {
     .ledc_channel = LEDC_CHANNEL_0,
 
     .pixel_format = PIXFORMAT_JPEG, // YUV422,GRAYSCALE,RGB565,JPEG
-    .frame_size =
-        FRAMESIZE_QVGA, // QQVGA-UXGA, For ESP32, do not use sizes above QVGA
-                        // when not JPEG. The performance of the ESP32-S series
-                        // has improved a lot, but JPEG mode always gives
-                        // better frame rates.
+
+    // QQVGA-UXGA, For ESP32, do not use sizes above QVGA
+    // when not JPEG. The performance of the ESP32-S series
+    // has improved a lot, but JPEG mode always gives
+    // better frame rates.
+    .frame_size = FRAMESIZE_QVGA,
+    // .frame_size = FRAMESIZE_UXGA,
 
     .jpeg_quality = 12, // 0-63, for OV series camera sensors, lower number
                         // means higher quality
@@ -98,6 +100,15 @@ static camera_config_t camera_config = {
 };
 
 void takePic() { set_cState(CAM_TAKE_PIC); }
+
+void test_send(uint8_t *buff, size_t size)
+{
+    for (size_t i = 0; i < size; i++)
+    {
+        printf("%x ", buff[i]);
+    }
+    printf("\n");
+}
 
 void fsm_camera()
 {
@@ -128,7 +139,8 @@ void fsm_camera()
         esp_camera_fb_return(pic);
         camIsReady = true;
         ESP_LOGI(FSM_CAMERA_TAG, "Cam is ready");
-        SCH_Add(takePic, 5000, ONCE);
+
+        SCH_Add(takePic, 10 * 1000, ONCE);
         set_cState(CAM_DO_NOTHING);
     }
     break;
@@ -139,21 +151,6 @@ void fsm_camera()
         camIsReady = false;
         ESP_LOGI(FSM_CAMERA_TAG, "Picture taken! Its size was: %zu bytes",
                  pic->len);
-
-#if USE_MESH
-        /* For testing */
-        ESP_LOGI(FSM_CAMERA_TAG, "256 begin character");
-        for (size_t i = 0; i < 256; i++)
-        {
-            printf("%x ", pic->buf[i]);
-        }
-
-        ESP_LOGI(FSM_CAMERA_TAG, "256 end character");
-        for (size_t i = pic->len - 256; i < pic->len; i++)
-        {
-            printf("%x ", pic->buf[i]);
-        }
-#endif
 
 #if USE_MESH
         /* Init socket to send image data */

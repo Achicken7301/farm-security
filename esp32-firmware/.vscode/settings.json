@@ -7,6 +7,7 @@
         "*.ipp": "c",
         "main.h": "c",
         "nvs_flash.h": "c",
-        "timer.h": "c"
+        "timer.h": "c",
+        "*.inc": "c"
     }
 }
