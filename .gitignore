@@ -51,5 +51,7 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-# Ignore build dir
+# Ignore dir
 **/build/**
+**/managed_components/**
+**/.vscode/**

@@ -2,6 +2,7 @@
 
 void timerInit();
 
+void startCam() { set_cState(CAM_INIT); }
 void app_main(void)
 {
     ESP_ERROR_CHECK(nvs_flash_init());
@@ -13,7 +14,11 @@ void app_main(void)
     /* Timer Init */
     timerInit();
 
+    // set_cState(CAM_INIT);
+
+#if USE_TCP_SERVER
     set_tcpState(AP_INIT);
+#endif
 
     while (1)
     {
@@ -25,8 +30,14 @@ void app_main(void)
         fsm_ap_init();
         fsm_tcp_server_nonblocking();
 #endif
+#if USE_MESH
         fsm_sta_init();
         fsm_mesh();
+#endif
+
+#if USE_CAMERA
+        fsm_camera();
+#endif
         SCH_Dispatch();
     }
 }
@@ -61,6 +72,7 @@ void timerInit()
         .counter_en = TIMER_PAUSE,
         .divider = 80, // 16bit: pre-scaler
         .intr_type = TIMER_INTR_LEVEL,
+
     };
 
     ESP_ERROR_CHECK(timer_init(TIMER_GROUP_0, TIMER_0, &ti_cfg));

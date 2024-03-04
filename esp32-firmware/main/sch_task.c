@@ -1,4 +1,4 @@
-#include "task.h"
+#include "sch_task.h"
 
 const char *MESH_SEND_TAG = "ESP_MESH_SEND";
 
@@ -85,13 +85,13 @@ void send2server() { set_mState(MESH_SOCKET_INIT); }
  */
 void send2root(char *data_send)
 {
-    uint8_t tx_buffer[MAX_TX_BUFFER];
+    char tx_buffer[MAX_TX_BUFFER];
     if (sizeof(data_send) > MAX_TX_BUFFER)
     {
         ESP_LOGI(MESH_SEND_TAG, "sizeof(data_send) > MAX_TX_BUFFER");
     }
 
-    int buff_size = sprintf(&tx_buffer, data_send);
+    int buff_size = sprintf(tx_buffer, data_send);
 
     mesh_data_t data = {
         .data = (uint8_t *)tx_buffer,
@@ -118,3 +118,5 @@ void send2root(char *data_send)
         break;
     }
 }
+
+void meshScanDone() {}

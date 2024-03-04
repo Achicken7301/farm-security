@@ -4,6 +4,9 @@
         "random": "c",
         "socket.h": "c",
         "sockets.h": "c",
-        "*.ipp": "c"
+        "*.ipp": "c",
+        "main.h": "c",
+        "nvs_flash.h": "c",
+        "timer.h": "c"
     }
 }
