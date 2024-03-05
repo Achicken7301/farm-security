@@ -1,8 +1,10 @@
 #ifndef __GLOBAL_H__
 #define __GLOBAL_H__
 
-/* Config router ssid&password using tcp server */
+/* Use 1 of 2 to config router ssid and password, if 0-0 which mean this is hard
+ * code, and can be modify in `global.c`*/
 #define USE_TCP_SERVER 0
+#define USE_HTTP_SERVER 0
 
 /* Connect esp to router */
 #define USE_STA 1
