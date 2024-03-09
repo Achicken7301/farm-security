@@ -7,6 +7,8 @@
 #include "sch_task.h"
 #include "scheduler.h"
 
+#define CPU_CLOCK 80
+
 #if USE_CAMERA
 #include "fsm_camera.h"
 #endif

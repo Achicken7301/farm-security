@@ -23,16 +23,16 @@ camera_fb_t *pic = NULL;
 const char *FSM_CAMERA_TAG = "CAMERA";
 char *get_cState(CameraState state)
 {
-    switch (state)
-    {
-    case CAM_INIT:
-        return "CAM_INIT";
+  switch (state)
+  {
+  case CAM_INIT:
+    return "CAM_INIT";
 
-    default:
-    {
-        return UNKNOWN_STATE;
-    }
-    }
+  default:
+  {
+    return UNKNOWN_STATE;
+  }
+  }
 }
 
 /**
@@ -47,15 +47,15 @@ char *get_cState(CameraState state)
  */
 void set_cState(CameraState state)
 {
-    if (!strIsEqual(get_cState(state), UNKNOWN_STATE))
-    {
-        ESP_LOGI(FSM_CAMERA_TAG, "Current State %s", get_cState(state));
-    }
-    else
-    {
-        ESP_LOGI(FSM_CAMERA_TAG, "Unknown State %d", state);
-    }
-    cState = state;
+  if (!strIsEqual(get_cState(state), UNKNOWN_STATE))
+  {
+    ESP_LOGI(FSM_CAMERA_TAG, "Current State %s", get_cState(state));
+  }
+  else
+  {
+    ESP_LOGI(FSM_CAMERA_TAG, "Unknown State %d", state);
+  }
+  cState = state;
 }
 
 static camera_config_t camera_config = {
@@ -102,64 +102,61 @@ void takePic() { set_cState(CAM_TAKE_PIC); }
 
 void fsm_camera()
 {
-    switch (cState)
+  switch (cState)
+  {
+  case CAM_INIT:
+  {
+    // initialize the camera
+    esp_err_t err = esp_camera_init(&camera_config);
+    if (err != ESP_OK)
     {
-    case CAM_INIT:
-    {
-        // initialize the camera
-        esp_err_t err = esp_camera_init(&camera_config);
-        if (err != ESP_OK)
-        {
-            ESP_LOGE(FSM_CAMERA_TAG, "Camera Init Failed");
-            set_cState(CAM_DEINIT);
-            break;
-        }
+      ESP_LOGE(FSM_CAMERA_TAG, "Camera Init Failed");
+      set_cState(CAM_DEINIT);
+      break;
+    }
 
-        /* Transision base on module */
+    /* Transision base on module */
 #if USE_MESH || USE_HTTP_CLIENT
-        set_cState(CAM_DO_NOTHING);
-        SCH_Add(takePic, RE_TAKE, ONCE);
+    set_cState(CAM_DO_NOTHING);
 #else
-        set_cState(CAM_TAKE_PIC);
+    set_cState(CAM_TAKE_PIC);
 #endif
-    }
-    break;
-    case CAM_CLEAR_PIC:
-    {
-        esp_camera_fb_return(pic);
-        ESP_LOGI(FSM_CAMERA_TAG, "Cam is ready");
-        ESP_LOGI(FSM_CAMERA_TAG, "Take picture after %dsecs", RE_TAKE / 1000);
-        SCH_Add(takePic, RE_TAKE, ONCE);
-        set_cState(CAM_DO_NOTHING);
-    }
-    break;
-    case CAM_TAKE_PIC:
-    {
-        ESP_LOGI(FSM_CAMERA_TAG, "Taking picture...");
-        pic = esp_camera_fb_get();
-        ESP_LOGI(FSM_CAMERA_TAG, "Picture taken! Its size was: %zu bytes",
-                 pic->len);
+  }
+  break;
+  case CAM_CLEAR_PIC:
+  {
+    esp_camera_fb_return(pic);
+    ESP_LOGI(FSM_CAMERA_TAG, "Cam is ready");
+    ESP_LOGI(FSM_CAMERA_TAG, "Take picture after %dsecs", RE_TAKE / 1000);
+    set_cState(CAM_DO_NOTHING);
+  }
+  break;
+  case CAM_TAKE_PIC:
+  {
+    ESP_LOGI(FSM_CAMERA_TAG, "Taking picture...");
+    pic = esp_camera_fb_get();
+    ESP_LOGI(FSM_CAMERA_TAG, "Picture taken! Its size was: %zu bytes", pic->len);
 
 #if USE_MESH && I_AM_ROOT
-        /* Init socket to send image data */
-        set_mState(MESH_SOCKET_INIT);
-        set_cState(CAM_DO_NOTHING);
+    /* Init socket to send image data */
+    set_mState(MESH_SOCKET_INIT);
+    set_cState(CAM_DO_NOTHING);
 #elif USE_HTTP_CLIENT
-        set_hcState(HTTP_CLIENT_POST);
+    set_hcState(HTTP_CLIENT_POST);
 #elif USE_CAMERA
-        set_cState(CAM_CLEAR_PIC);
+    set_cState(CAM_CLEAR_PIC);
 #endif // End #ifdef USE_MESH
-    }
+  }
+  break;
+  case CAM_DEINIT:
+  {
+  }
+  break;
+  case CAM_DO_NOTHING:
+  {
+  }
+  break;
+  default:
     break;
-    case CAM_DEINIT:
-    {
-    }
-    break;
-    case CAM_DO_NOTHING:
-    {
-    }
-    break;
-    default:
-        break;
-    }
+  }
 }

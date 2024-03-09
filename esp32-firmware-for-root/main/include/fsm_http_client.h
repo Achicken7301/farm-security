@@ -11,16 +11,25 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "global.h"
+
+#if USE_CAMERA
 #include "fsm_camera.h"
+#endif // End #if USE_CAMERA
+
+#if USE_MESH
+#include "fsm_mesh.h"
+#endif // End #if USE_MESH
+
 #include "scheduler.h"
 
 typedef enum
 {
-    HTTP_CLIENT_INIT,
-    HTTP_CLIENT_DEINIT,
-    HTTP_CLIENT_GET,
-    HTTP_CLIENT_DO_NOTHING,
-    HTTP_CLIENT_POST,
+  HTTP_CLIENT_INIT,
+  HTTP_CLIENT_DEINIT,
+  HTTP_CLIENT_GET,
+  HTTP_CLIENT_DO_NOTHING,
+  HTTP_CLIENT_POST,
 } HttpClientState;
 #define UNKNOWN_STATE "-1"
 
