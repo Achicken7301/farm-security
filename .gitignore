@@ -56,3 +56,4 @@ dkms.conf
 **/managed_components/**
 **/.vscode/**
 **/env/**
+*.jpg
