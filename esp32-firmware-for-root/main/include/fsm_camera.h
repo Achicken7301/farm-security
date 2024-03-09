@@ -46,8 +46,6 @@
 #define UNKNOWN_STATE "-1"
 #define RE_TAKE (1 * 1000)
 #define ONCE (0)
-#define MAX_IMAGE_SIZE (100 * 1000)
-
 typedef enum
 {
   CAM_INIT,

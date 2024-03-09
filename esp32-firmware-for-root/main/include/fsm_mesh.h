@@ -30,6 +30,7 @@
 #define DUMP_DATA_LINES 4 // 4 lines * 16 bytes each
 
 #define MESH_AP_CONNECTION 6
+#define MAX_IMAGE_SIZE (100 * 1000)
 
 typedef enum
 {
@@ -56,7 +57,7 @@ typedef enum
 
 extern MeshState mState;
 extern int bytes_receive;
-extern uint8_t *pic_from_mesh;
+extern uint8_t picFromMesh[MAX_IMAGE_SIZE];
 
 void mesh_event_handler(void *event_handler_arg, esp_event_base_t event_base,
                         int32_t event_id, void *event_data);

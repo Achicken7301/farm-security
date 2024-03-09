@@ -14,8 +14,7 @@ int last_layer = -1;
 int pic_len = 0;
 int bytes_receive = 0;
 
-uint8_t *pic_from_mesh = 0;
-uint8_t picFromMesh[MAX_IMAGE_SIZE];
+uint8_t picFromMesh[MAX_IMAGE_SIZE] = {0};
 
 /**
  * @brief Set Mesh State
@@ -156,32 +155,20 @@ void fsm_mesh()
         {
         case MESH_PROTO_HTTP:
         {
-          ESP_LOGI(MESH_TAG, "Free pic_from_mesh memories from malloc");
-          free(pic_from_mesh);
-          pic_from_mesh = NULL;
-          pic_len = 0;
           bytes_receive = 0;
+          pic_len = 0;
 
+          memset(picFromMesh, 0, MAX_IMAGE_SIZE);
           ESP_LOGI(MESH_TAG, "MESH_PROTO_HTTP");
-          // pic_len = rx_data.data;
           memcpy(&pic_len, rx_data.data, sizeof(int));
           ESP_LOGI(MESH_TAG, "Root receive image size: %dbytes", pic_len);
-
-          ESP_LOGW(MESH_TAG, "Allocate %d bytes for picture_frame", pic_len);
-          pic_from_mesh = malloc(sizeof(uint8_t) * pic_len);
         }
         break;
         case MESH_PROTO_BIN:
         {
-
-          // ESP_LOGI(MESH_TAG, "Copy %d bytes to pic_from_mesh[%d]", rx_data.size,
-          //          bytes_receive);
-          // ESP_LOG_BUFFER_HEX(MESH_TAG, rx_data.data, 32);
-
-          /* TODO: Sometimes crash here, I dont know why???? */
-          memcpy(&pic_from_mesh[bytes_receive], rx_data.data, rx_data.size);
+          memcpy(&picFromMesh[bytes_receive], rx_data.data, rx_data.size);
+          // ESP_LOGI(MESH_TAG, "Reiceive image data[%d/%d]", bytes_receive, pic_len);
           bytes_receive += rx_data.size;
-          // ESP_LOGI(MESH_TAG, "Receive: %d/%d", bytes_receive, pic_len);
 
           if (bytes_receive == pic_len)
           {
@@ -210,13 +197,6 @@ void fsm_mesh()
   break;
   case MESH_SEND:
   {
-  }
-  break;
-  case MESH_CLEAR_IMAGE_BUFF:
-  {
-    free(pic_from_mesh);
-    pic_len = 0;
-    bytes_receive = 0;
   }
   break;
   case MESH_DO_NOTHING:

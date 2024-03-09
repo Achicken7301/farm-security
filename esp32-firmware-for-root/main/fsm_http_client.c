@@ -1,8 +1,8 @@
 #include "fsm_http_client.h"
 
-HttpClientState hcState = HTTP_CLIENT_DO_NOTHING;
-
+HttpClientState hcState = HTTP_CLIENT_INIT;
 const char *HTTP_CLIENT_TAG = "HTTP_CLIENT";
+esp_http_client_handle_t client_post;
 const char *get_hcState(HttpClientState state)
 {
   switch (state)
@@ -126,8 +126,6 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
   return ESP_OK;
 }
 
-void taskHttpGet() { set_hcState(HTTP_CLIENT_GET); }
-void taskHttpPost() { set_hcState(HTTP_CLIENT_POST); }
 void fsm_http_client()
 {
   switch (hcState)
@@ -157,8 +155,22 @@ void fsm_http_client()
     };
     client = esp_http_client_init(&config);
 
-    // SCH_Add(taskHttpGet, 5000, ONCE);
-    // SCH_Add(taskHttpPost, 5000, ONCE);
+    static esp_http_client_config_t config_post = {
+        .host = CONFIG_EXAMPLE_HTTP_ENDPOINT,
+        .path = "/get",
+        .port = 8080,
+        .transport_type = HTTP_TRANSPORT_OVER_TCP,
+        .event_handler = _http_event_handler,
+        .user_data = local_response_buffer, // Pass address of local
+                                            // buffer to get response
+        .disable_auto_redirect = true,
+    };
+
+    client_post = esp_http_client_init(&config_post);
+    esp_http_client_set_url(client_post, "/api/upload");
+    esp_http_client_set_method(client_post, HTTP_METHOD_POST);
+    esp_http_client_set_header(client_post, "Content-Type", "image/jpg");
+
     set_hcState(HTTP_CLIENT_DO_NOTHING);
   }
   break;
@@ -184,23 +196,7 @@ void fsm_http_client()
   break;
   case HTTP_CLIENT_POST:
   {
-    esp_http_client_config_t config = {
-        .host = CONFIG_EXAMPLE_HTTP_ENDPOINT,
-        .path = "/get",
-        .port = 8080,
-        .transport_type = HTTP_TRANSPORT_OVER_TCP,
-        .event_handler = _http_event_handler,
-    };
-    esp_http_client_handle_t client_post = esp_http_client_init(&config);
-
-    // POST
-    // const char *post_data = "{\"field1\":\"value1\"}";
-    esp_http_client_set_url(client_post, "/api/upload");
-    esp_http_client_set_method(client_post, HTTP_METHOD_POST);
-
-    esp_http_client_set_header(client_post, "Content-Type", "image/jpg");
-    esp_http_client_set_post_field(client_post, (const char *)pic_from_mesh,
-                                   bytes_receive);
+    esp_http_client_set_post_field(client_post, (const char *)picFromMesh, bytes_receive);
     esp_err_t err = esp_http_client_perform(client_post);
     if (err == ESP_OK)
     {
@@ -213,6 +209,7 @@ void fsm_http_client()
       ESP_LOGE(HTTP_CLIENT_TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
     }
 
+    set_hcState(HTTP_CLIENT_CLEANUP);
 #if USE_CAMERA
     set_cState(CAM_CLEAR_PIC);
     set_hcState(HTTP_CLIENT_DO_NOTHING);
@@ -221,6 +218,12 @@ void fsm_http_client()
 #else
     set_hcState(HTTP_CLIENT_DO_NOTHING);
 #endif
+  }
+  break;
+  case HTTP_CLIENT_CLEANUP:
+  {
+    esp_http_client_cleanup(client_post);
+    set_hcState(HTTP_CLIENT_DO_NOTHING);
   }
   break;
   case HTTP_CLIENT_DO_NOTHING:

@@ -41,10 +41,12 @@ def api_upload():
     elif header_type == IMAGE:
         now = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         file_format = f"{now}.{header_format}"
-        with open(file_format, "wb") as f:
-            f.write(request.data)
+        # print(f"Saved {file_format}")
+        print(f"Receiving {len(request.data)} bytes")
+        # with open(file_format, "wb") as f:
+        #     f.write(request.data)
 
-        return "upload_success"
+    return "upload_success"
 
 
 @app.route("/")
