@@ -22,7 +22,6 @@ void rootCheck()
 {
   if (esp_mesh_is_root())
   {
-    // ESP_LOGI(MESH_TAG, "I AM ROOT");
     set_mState(MESH_RECEIVE);
   }
 }
@@ -53,13 +52,10 @@ void app_main(void)
     fsm_ap();
     fsm_tcp_server_nonblocking();
 #endif
-#if USE_STA
+#if USE_HTTP_CLIENT || USE_STA
     fsm_sta();
-#endif
-#if USE_HTTP_CLIENT
     fsm_http_client();
 #endif
-
 #if USE_MESH
     fsm_mesh();
 #endif
@@ -87,7 +83,7 @@ bool TIM0_GROUP1_Callback(void *arg)
 };
 
 /**
- * @brief Config TIMER
+ * @brief Timer configuration
  *
  */
 void timerInit()
@@ -109,6 +105,7 @@ void timerInit()
   /**
    * @brief 1 tick = 1us
    * Timer trigger alarm when counter == 10 * 1000 (10ms)
+   * @note Try to avoid conflict with most use timer0
    *
    */
   ESP_ERROR_CHECK(timer_set_alarm_value(TIMER_GROUP_1, TIMER_0, 10 * 1000));

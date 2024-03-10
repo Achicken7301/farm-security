@@ -27,7 +27,9 @@ void app_main(void)
   /* Timer Init */
   timerInit();
   // SCH_Add(meshSend, 10000, 5000);
-  SCH_Add(sendPic2Mesh, 10000, 10 * 1000);
+#if USE_CAMERA
+  SCH_Add(sendPic2Mesh, 10000, 5 * 1000);
+#endif // End #if USE_CAMERA
 
   while (1)
   {
@@ -57,13 +59,13 @@ void app_main(void)
  *
  * @param arg
  */
-bool TIM0_GROUP0_Callback(void *arg)
+bool TIMER0_GROUP1_Callback(void *arg)
 {
   // timerrun();
   SCH_Update();
   // Need to enable intr again
   // https://docs.espressif.com/projects/esp-idf/en/release-v4.4/esp32/api-reference/peripherals/timer.html#introduction:~:text=once%20triggered%2c%20the%20alarm%20is%20disabled%20automatically%20and%20needs%20to%20be%20re%2denabled%20to%20trigger%20again.
-  ESP_ERROR_CHECK(timer_enable_intr(TIMER_GROUP_0, TIMER_0));
+  ESP_ERROR_CHECK(timer_enable_intr(TIMER_GROUP_1, TIMER_0));
 
   return 1;
 };
@@ -85,18 +87,18 @@ void timerInit()
 
   };
 
-  ESP_ERROR_CHECK(timer_init(TIMER_GROUP_0, TIMER_0, &ti_cfg));
-  ESP_ERROR_CHECK(timer_set_counter_value(TIMER_GROUP_0, TIMER_0, 0x00));
+  ESP_ERROR_CHECK(timer_init(TIMER_GROUP_1, TIMER_0, &ti_cfg));
+  ESP_ERROR_CHECK(timer_set_counter_value(TIMER_GROUP_1, TIMER_0, 0x00));
 
   /**
    * @brief 1 tick = 1us
    * Timer trigger alarm when counter == 10 * 1000 (10ms)
    *
    */
-  ESP_ERROR_CHECK(timer_set_alarm_value(TIMER_GROUP_0, TIMER_0, 10 * 1000));
-  ESP_ERROR_CHECK(timer_enable_intr(TIMER_GROUP_0, TIMER_0));
+  ESP_ERROR_CHECK(timer_set_alarm_value(TIMER_GROUP_1, TIMER_0, 10 * 1000));
+  ESP_ERROR_CHECK(timer_enable_intr(TIMER_GROUP_1, TIMER_0));
   ESP_ERROR_CHECK(
-      timer_isr_callback_add(TIMER_GROUP_0, TIMER_0, TIM0_GROUP0_Callback, NULL, 0));
+      timer_isr_callback_add(TIMER_GROUP_1, TIMER_0, TIMER0_GROUP1_Callback, NULL, 0));
 
-  ESP_ERROR_CHECK(timer_start(TIMER_GROUP_0, TIMER_0));
+  ESP_ERROR_CHECK(timer_start(TIMER_GROUP_1, TIMER_0));
 }

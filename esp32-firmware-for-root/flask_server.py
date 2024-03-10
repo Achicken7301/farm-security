@@ -10,7 +10,9 @@ IMAGE = "image"
 @app.route("/api/get", methods=["GET"])
 def api_get():
     # Return a JSON response for GET request
-    data = {"message": "API GET request successful"}
+    now_date_time = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+
+    data = {f"Datetime": str(now_date_time), "ROUTER_SSID": "", "ROUTER_PASS": "", "SERVER_IPV4": ""}
     return jsonify(data)
 
 
@@ -19,14 +21,27 @@ def api_post():
     if request.method == "POST":
         # Assuming the incoming data is in JSON format
         request_data = request.get_json()
+        header_type, header_format = request.headers["Content-Type"].split("/")
+        print(request.headers)
+
+        now_date = datetime.datetime.now().strftime("%d-%m-%Y")
+        now_date_time = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+
+        if header_type == APP:
+            # Open the file in append mode ('a')
+            with open(f'{now_date}.txt', 'a') as file:
+                # Write the desired text to the end of the file
+                file.write(f'[{now_date_time}] {request.data.decode()}\n')
+
+
 
         # Process the data or perform any necessary operations
         # For demonstration purposes, let's just echo the received data
-        response_data = {
-            "message": "API POST request successful",
-            "data_received": request_data,
-        }
-        return jsonify(response_data)
+        # response_data = {
+            # "message": "API POST request successful",
+        #     "data_received": request_data,
+        # }
+        return "Server reiceve success"
 
 
 @app.route("/api/upload", methods=["POST", "GET"])

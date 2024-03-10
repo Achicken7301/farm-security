@@ -61,6 +61,7 @@ void set_cState(CameraState state)
 }
 
 void takePic() { set_cState(CAM_TAKE_PIC); }
+void reInitCamera() { set_cState(CAM_INIT); }
 
 void fsm_camera()
 {
@@ -115,6 +116,8 @@ void fsm_camera()
     {
       isCamReady = 0;
       ESP_LOGE(FSM_CAMERA_TAG, "Camera Init Failed");
+      ESP_LOGI(FSM_CAMERA_TAG, "Re-Init Camera");
+      SCH_Add(reInitCamera, 5000, 5000);
       set_cState(CAM_DEINIT);
       break;
     }

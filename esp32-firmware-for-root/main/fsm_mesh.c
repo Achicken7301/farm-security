@@ -124,10 +124,13 @@ void fsm_mesh()
     cfg.mesh_ap.max_connection = MESH_AP_CONNECTION;
     memcpy(&cfg.mesh_ap.password, ROUTER_PASS, strlen(ROUTER_PASS));
     ESP_ERROR_CHECK(esp_mesh_set_config(&cfg));
+
     /* mesh start */
     ESP_ERROR_CHECK(esp_mesh_start());
-
+    esp_mesh_set_self_organized(true, false);
     // esp_mesh_set_parent(&sta_config, &mesh_parent_addr, MESH_ROOT, MESH_ROOT_LAYER);
+
+    // esp_mesh_connect();
     set_mState(MESH_DO_NOTHING);
     // set_mState(MESH_DO_NOTHING);
   }

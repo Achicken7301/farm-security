@@ -1,0 +1,1 @@
+[10-03-2024 10:06:28] {"MAC": "FF:FF:FF:FF:FF:FF","Message": "Start Up State"}

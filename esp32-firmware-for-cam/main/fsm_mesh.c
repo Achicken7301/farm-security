@@ -14,6 +14,8 @@ uint8_t rx_buf[1460] = {
 const uint8_t MESH_ID[6] = {0x77, 0x77, 0x77, 0x77, 0x77, 0x77};
 mesh_addr_t id;
 uint16_t mesh_layer;
+
+/* Root */
 mesh_addr_t mesh_parent_addr;
 int last_layer = -1;
 
@@ -36,11 +38,11 @@ void set_mState(MeshState state)
   mState = state;
   if (strcmp(get_mState(), UNKNOWN_STATE))
   {
-    printf("MESH_TAG: Current State: %s\n", get_mState());
+    ESP_LOGI(MESH_TAG, "Current State %s", get_mState());
   }
   else
   {
-    printf("MESH_TAG: Current State: 0x%02x\n", state);
+    ESP_LOGI(MESH_TAG, "Current State 0x%02x", state);
   }
 }
 
@@ -127,14 +129,17 @@ void fsm_mesh()
     cfg.router.ssid_len = strlen(ROUTER_SSID);
     memcpy(&cfg.router.ssid, ROUTER_SSID, cfg.router.ssid_len);
     memcpy(&cfg.router.password, ROUTER_PASS, strlen(ROUTER_PASS));
-
     /* mesh softAP */
     cfg.mesh_ap.max_connection = MESH_AP_CONNECTION;
     memcpy(&cfg.mesh_ap.password, ROUTER_PASS, strlen(ROUTER_PASS));
+
     ESP_ERROR_CHECK(esp_mesh_set_config(&cfg));
-    // esp_mesh_fix_root(true);
+    esp_mesh_set_self_organized(true, true);
     /* mesh start */
     ESP_ERROR_CHECK(esp_mesh_start());
+
+    ESP_LOGI(MESH_TAG, "Start connecting....");
+    esp_mesh_connect();
     set_mState(MESH_DO_NOTHING);
   }
   break;
@@ -226,6 +231,11 @@ void mesh_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id
     esp_mesh_get_id(&id);
     ESP_LOGI(MESH_TAG, "<MESH_EVENT_MESH_STARTED>ID:" MACSTR "", MAC2STR(id.addr));
     mesh_layer = esp_mesh_get_layer();
+
+    ESP_LOGI(MESH_TAG, "Allow Scan but forgo the election process");
+#if !I_AM_ROOT
+    esp_mesh_fix_root(true);
+#endif // End #if !I_AM_ROOT
   }
   break;
   case MESH_EVENT_ROOT_ADDRESS:
@@ -260,6 +270,7 @@ void mesh_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id
   break;
   case MESH_EVENT_PARENT_CONNECTED:
   {
+    ESP_LOGI(MESH_TAG, "<MESH_EVENT_PARENT_CONNECTED>");
     mesh_event_connected_t *connected = (mesh_event_connected_t *)event_data;
     esp_mesh_get_id(&id);
     mesh_layer = connected->self_layer;
@@ -300,6 +311,9 @@ void mesh_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id
     mesh_event_network_state_t *network_state = (mesh_event_network_state_t *)event_data;
     ESP_LOGI(MESH_TAG, "<MESH_EVENT_NETWORK_STATE>is_rootless:%d",
              network_state->is_rootless);
+#if !I_AM_ROOT
+    esp_mesh_fix_root(true);
+#endif // End #if !I_AM_ROOT
   }
   break;
 
@@ -311,8 +325,24 @@ void mesh_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id
              ps_duty->duty);
   }
   break;
+#if !I_AM_ROOT
+  case MESH_EVENT_ROOT_FIXED:
+  {
+    ESP_LOGI(MESH_TAG, "MESH_EVENT_ROOT_FIXED");
+    ESP_LOGI(MESH_TAG, "Cancel all services");
+
+    /* TODO: Deinit all camera in scheduler */
+  }
+  break;
+  case MESH_EVENT_NO_PARENT_FOUND:
+  {
+    ESP_LOGI(MESH_TAG, "MESH_EVENT_NO_PARENT_FOUND");
+
+    /* TODO: Deep sleep mode for 30mins or something then wake up and scan for 5mins */
+  }
+  break;
+#endif // End #if I_AM_ROOT
   default:
-    // printf("NEW mesh_event_handler event_id: %d\n", event_id);
     ESP_LOGI(MESH_TAG, "mesh_event_handler event_id: %d", event_id);
     break;
   }

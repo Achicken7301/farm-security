@@ -27,6 +27,8 @@
 /* Need to be free(payload) */
 #define TX_BUFF_MAX (32)
 
+extern wifi_config_t sta_config;
+
 void fsm_sta();
 MeshError_t root_sendImage2server();
 void ip_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id,

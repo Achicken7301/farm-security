@@ -37,7 +37,7 @@ typedef enum
 
 #define MAX_HTTP_RECV_BUFFER 512
 #define MAX_HTTP_OUTPUT_BUFFER 2048
-#define CONFIG_EXAMPLE_HTTP_ENDPOINT "192.168.1.13"
+#define CONFIG_EXAMPLE_HTTP_ENDPOINT "192.168.1.155"
 
 void fsm_http_client();
 void set_hcState(HttpClientState);
