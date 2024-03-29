@@ -1,9 +1,11 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
+#include "fsm_power_save.h"
 #include "global.h"
 #include "sch_task.h"
 #include "scheduler.h"
+
 #include <driver/timer.h>
 #include <nvs_flash.h>
 

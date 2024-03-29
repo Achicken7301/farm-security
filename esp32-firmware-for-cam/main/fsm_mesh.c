@@ -5,7 +5,7 @@ MeshState mState = MESH_STA_INTERFACE;
 #elif USE_MESH
 MeshState mState = MESH_INIT;
 #endif
-
+int connected2Root = 0;
 /* Data init */
 uint8_t rx_buf[1460] = {
     0,
@@ -18,6 +18,8 @@ uint16_t mesh_layer;
 /* Root */
 mesh_addr_t mesh_parent_addr;
 int last_layer = -1;
+
+void send_pic_from_mesh_to_server() {}
 
 /**
  * @brief Set Mesh State
@@ -54,6 +56,7 @@ void dumpData(uint8_t *buff)
            buff[0], buff[1], buff[2], buff[3], buff[4], buff[5], buff[6], buff[7],
            buff[8], buff[9], buff[10], buff[11], buff[12], buff[13], buff[14], buff[15]);
 }
+
 const char *get_mState()
 {
   switch (mState)
@@ -66,8 +69,6 @@ const char *get_mState()
     return "MESH_SOCKET_SEND";
   case MESH_SOCKET_CLOSE:
     return "MESH_SOCKET_CLOSE";
-  case MESH_LEAF_ROOT:
-    return "MESH_LEAF_ROOT";
   case MESH_INIT:
     return "MESH_INIT";
   case MESH_SEND_IMAGE:
@@ -117,6 +118,8 @@ void fsm_mesh()
 #endif
     /*  mesh initialization */
     ESP_ERROR_CHECK(esp_mesh_init());
+    esp_mesh_enable_ps();
+
     /*  register mesh events handler */
     ESP_ERROR_CHECK(esp_event_handler_register(MESH_EVENT, ESP_EVENT_ANY_ID,
                                                &mesh_event_handler, NULL));
@@ -140,23 +143,34 @@ void fsm_mesh()
 
     ESP_LOGI(MESH_TAG, "Start connecting....");
     esp_mesh_connect();
+
     set_mState(MESH_DO_NOTHING);
-  }
-  break;
-  case MESH_RECEIVE:
-  {
   }
   break;
   case MESH_SEND_IMAGE:
   {
+    /* isCamReady = 0 which mean picture is taken wait for clear_pic */
+    if (connected2Root == 0)
+    {
+      // ESP_LOGE(MESH_TAG, "Not connected to Root");
+      // set_mState(MESH_DO_NOTHING);
+      /* TODO: no connected to root, set power save mode to deep sleep */
+      break;
+    }
+
+    /* Cam is ready which mean not taking pictures -> no data */
+    if (isCamReady == 1)
+    {
+      // ESP_LOGE(MESH_TAG, "isCamReady = 1");
+      // set_mState(MESH_DO_NOTHING);
+      break;
+    }
+
     esp_err_t mesh_send_err;
     int package = 0;
     int bytes_left = pic->len % MESH_MAX_TX_BUFF;
 
     mesh_data_t mesh_tx_data = {
-        // .data = (uint8_t *)"This is suck",
-        // .size = sizeof(payload),
-        // .proto = MESH_PROTO_BIN,
         .tos = MESH_TOS_P2P,
     };
 
@@ -164,7 +178,6 @@ void fsm_mesh()
     uint8_t payload[50];
 
     memcpy(payload, &pic->len, sizeof(int));
-
     mesh_tx_data.proto = MESH_PROTO_HTTP;
     mesh_tx_data.data = (uint8_t *)payload;
     mesh_tx_data.size = sizeof(pic->len);
@@ -243,6 +256,8 @@ void mesh_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id
     mesh_event_root_address_t *root_addr = (mesh_event_root_address_t *)event_data;
     ESP_LOGI(MESH_TAG, "<MESH_EVENT_ROOT_ADDRESS>root address:" MACSTR "",
              MAC2STR(root_addr->addr));
+
+    connected2Root = 1;
   }
   break;
   case MESH_EVENT_TODS_STATE:
@@ -291,6 +306,9 @@ void mesh_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id
     mesh_event_disconnected_t *disconnected = (mesh_event_disconnected_t *)event_data;
     ESP_LOGI(MESH_TAG, "<MESH_EVENT_PARENT_DISCONNECTED>reason:%d", disconnected->reason);
     mesh_layer = esp_mesh_get_layer();
+
+    /* TODO: Go to deep-sleep, wake-up 30s later to check */
+    SCH_Add(deep_sleep_wakeup_by_timer, 1000, ONCE);
   }
   break;
   case MESH_EVENT_FIND_NETWORK:
@@ -313,6 +331,9 @@ void mesh_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id
              network_state->is_rootless);
 #if !I_AM_ROOT
     esp_mesh_fix_root(true);
+    connected2Root = 0;
+    /* TODO: Go to deep-sleep, wake-up 30s later to check */
+    SCH_Add(deep_sleep_wakeup_by_timer, 1000, ONCE);
 #endif // End #if !I_AM_ROOT
   }
   break;
@@ -329,7 +350,6 @@ void mesh_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id
   case MESH_EVENT_ROOT_FIXED:
   {
     ESP_LOGI(MESH_TAG, "MESH_EVENT_ROOT_FIXED");
-    ESP_LOGI(MESH_TAG, "Cancel all services");
 
     /* TODO: Deinit all camera in scheduler */
   }
@@ -347,3 +367,5 @@ void mesh_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id
     break;
   }
 }
+
+void meshSend() { set_mState(MESH_SEND_IMAGE); }

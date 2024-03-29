@@ -24,10 +24,10 @@
 
 #define MESH_MAX_RX_BUFF 1024
 #define MESH_MAX_TX_BUFF 1024
-#define UNKNOWN_STATE "-1"
-#define mSTATE_DEBUG 0
 #define DUMP_DATA_BUFF 16 // 16 bytes per line
 #define DUMP_DATA_LINES 4 // 4 lines * 16 bytes each
+
+#define mSTATE_DEBUG 0
 
 #define MESH_AP_CONNECTION 6
 #define MAX_IMAGE_SIZE (100 * 1000)
@@ -49,8 +49,8 @@ typedef enum
 
   MESH_INIT,
   MESH_SEND,
-  MESH_RECEIVE,       // Receive image size
-  MESH_RECEIVE_IMAGE, // Execute command code
+  MESH_RECEIVE, // Receive image size
+  MESH_RECEIVE_DS,
   MESH_CLEAR_IMAGE_BUFF,
   MESH_DO_NOTHING,
 } MeshState;

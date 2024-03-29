@@ -58,8 +58,8 @@ def api_upload():
         file_format = f"{now}.{header_format}"
         # print(f"Saved {file_format}")
         print(f"Receiving {len(request.data)} bytes")
-        # with open(file_format, "wb") as f:
-        #     f.write(request.data)
+        with open(file_format, "wb") as f:
+            f.write(request.data)
 
     return "upload_success"
 

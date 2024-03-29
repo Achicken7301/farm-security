@@ -11,8 +11,15 @@
 #include <sys/param.h>
 
 #include "esp_camera.h"
+#include "fsm_power_save.h"
+#include "global.h"
+#if USE_MESH
+#include "fsm_mesh.h"
+#endif // End #if USE_MESH
+#if USE_HTTP_CLIENT
 #include "fsm_http_client.h"
 #include "fsm_sta.h"
+#endif // End #if USE_HTTP_CLIENT
 #include "scheduler.h"
 
 // support IDF 5.x
@@ -45,21 +52,21 @@
 
 #define UNKNOWN_STATE "-1"
 #define RE_TAKE (10 * 1000)
-#define ONCE (0)
 
 typedef enum
 {
-    CAM_INIT,
-    CAM_TAKE_PIC,
-    CAM_CLEAR_PIC,
-    CAM_DEINIT,
-    CAM_DO_NOTHING,
+  CAM_INIT,
+  CAM_TAKE_PIC,
+  CAM_CLEAR_PIC,
+  CAM_DEINIT,
+  CAM_DO_NOTHING,
 } CameraState;
 
 extern const char *FSM_CAMERA_TAG;
 extern camera_fb_t *pic;
 extern int isCamReady;
 
+void sendPic2Mesh();
 void set_cState(CameraState);
 void fsm_camera();
 

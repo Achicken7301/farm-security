@@ -102,6 +102,7 @@ void takePic() { set_cState(CAM_TAKE_PIC); }
 
 void fsm_camera()
 {
+#if USE_CAMERA
   switch (cState)
   {
   case CAM_INIT:
@@ -159,4 +160,5 @@ void fsm_camera()
   default:
     break;
   }
+#endif // End #if USE_CAMERA
 }

@@ -17,7 +17,9 @@
 /* Http Client connects to Router (root only) */
 #define USE_HTTP_CLIENT 1
 
-#define I_AM_ROOT 1
+#define I_AM_ROOT 0
+
+#define UNKNOWN_STATE "-1"
 
 /* The compiler wont let me define in `fsm_mesh.h` */
 typedef enum

@@ -1,23 +1,30 @@
 #ifndef __GLOBAL_H__
 #define __GLOBAL_H__
 
+#include <string.h>
+
 /* Config router ssid&password using tcp server, if root, config IPv4 server*/
 #define USE_TCP_SERVER 0
 
-/* Connect esp to router */
-#define USE_STA 0
-
 /* Connect esp - esp */
-#define USE_MESH 1
+#define USE_MESH 0
 
 /* Camera module */
 #define USE_CAMERA 1
+
+/* Connect esp to router (root only) */
+#define USE_STA 0
 
 /* Http Client connects to Router (root only) */
 #define USE_HTTP_CLIENT 0
 
 #define I_AM_ROOT 0
 
+#define UNKNOWN_STATE "-1"
+#define ONCE (0)
+
+extern int NIGHT;
+extern int DAY;
 /* The compiler wont let me define in `fsm_mesh.h` */
 typedef enum
 {
@@ -57,4 +64,5 @@ void set_router_config(int);
 int is_router_connected();
 void set_router_connected(int);
 
+int strIsEqual(char *str1, char *str2);
 #endif // End #ifndef __GLOBAL_H__

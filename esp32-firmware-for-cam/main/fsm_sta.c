@@ -164,10 +164,6 @@ void fsm_sta()
     set_mState(MESH_DO_NOTHING);
   }
   break;
-  case MESH_LEAF_ROOT:
-  {
-  }
-  break;
   default:
     break;
   }

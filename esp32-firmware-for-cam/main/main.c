@@ -1,18 +1,6 @@
 #include "main.h"
 
 void timerInit();
-void startHttpClientGet() { set_hcState(HTTP_CLIENT_GET); }
-void startHttpClientPost() { set_hcState(HTTP_CLIENT_POST); }
-
-void sendPic2Mesh()
-{
-  if (isCamReady)
-  {
-    set_cState(CAM_TAKE_PIC);
-  }
-}
-
-void meshSend() { set_mState(MESH_SEND_IMAGE); }
 
 void app_main(void)
 {
@@ -26,10 +14,9 @@ void app_main(void)
 
   /* Timer Init */
   timerInit();
-  // SCH_Add(meshSend, 10000, 5000);
-#if USE_CAMERA
-  SCH_Add(sendPic2Mesh, 10000, 5 * 1000);
-#endif // End #if USE_CAMERA
+
+  hc_501_gpio_init();
+  ir_led_gpio_config();
 
   while (1)
   {
@@ -42,14 +29,15 @@ void app_main(void)
     fsm_sta();
     fsm_http_client();
 #endif
+#if USE_CAMERA
+    fsm_camera();
+#endif
 
 #if USE_MESH
     fsm_mesh();
 #endif
-
-#if USE_CAMERA
-    fsm_camera();
-#endif
+    fsm_hc501();
+    fsm_power_save();
     SCH_Dispatch();
   }
 }
@@ -63,6 +51,7 @@ bool TIMER0_GROUP1_Callback(void *arg)
 {
   // timerrun();
   SCH_Update();
+  hc_501_reading();
   // Need to enable intr again
   // https://docs.espressif.com/projects/esp-idf/en/release-v4.4/esp32/api-reference/peripherals/timer.html#introduction:~:text=once%20triggered%2c%20the%20alarm%20is%20disabled%20automatically%20and%20needs%20to%20be%20re%2denabled%20to%20trigger%20again.
   ESP_ERROR_CHECK(timer_enable_intr(TIMER_GROUP_1, TIMER_0));
@@ -76,7 +65,6 @@ bool TIMER0_GROUP1_Callback(void *arg)
  */
 void timerInit()
 {
-
   timer_config_t ti_cfg = {
       .alarm_en = TIMER_ALARM_EN,
       .auto_reload = TIMER_AUTORELOAD_EN,

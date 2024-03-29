@@ -128,6 +128,7 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 
 void fsm_http_client()
 {
+#if USE_HTTP_CLIENT
   switch (hcState)
   {
   case HTTP_CLIENT_INIT:
@@ -233,4 +234,6 @@ void fsm_http_client()
   default:
     break;
   }
+
+#endif // End #if USE_HTTP_CLIENT
 }

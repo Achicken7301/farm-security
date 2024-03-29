@@ -88,6 +88,7 @@ void dumpData(uint8_t *buff, int buff_size)
 
 void fsm_mesh()
 {
+#if USE_MESH
   switch (mState)
   {
   case MESH_INIT:
@@ -137,19 +138,18 @@ void fsm_mesh()
   break;
   case MESH_RECEIVE:
   {
-    uint8_t rx_buf[MESH_MAX_RX_BUFF] = {0};
-
-    mesh_addr_t from;
-    mesh_data_t rx_data = {.size = MESH_MAX_RX_BUFF, .data = rx_buf};
-    int flag;
-    mesh_opt_t opt;
-
     /* Check buffers */
     mesh_rx_pending_t pending;
     esp_mesh_get_rx_pending(&pending);
-    if (pending.toSelf > 0 || pending.toDS > 0)
+    if (pending.toSelf > 0)
     {
+      uint8_t rx_buf[MESH_MAX_RX_BUFF] = {0};
+      mesh_addr_t from;
+      mesh_data_t rx_data = {.size = MESH_MAX_RX_BUFF, .data = rx_buf};
+      int flag;
+      mesh_opt_t opt;
       esp_err_t err = esp_mesh_recv(&from, &rx_data, portMAX_DELAY, &flag, &opt, 1);
+      ESP_LOGI(MESH_TAG, "Receive from: " MACSTR "", MAC2STR(from.addr));
 
       /* Need error trace */
       if (err == ESP_OK)
@@ -169,20 +169,21 @@ void fsm_mesh()
         break;
         case MESH_PROTO_BIN:
         {
+          if (pic_len > MAX_IMAGE_SIZE)
+          {
+            ESP_LOGE(MESH_TAG, "pic_len > MAX_IMAGE_SIZE(%d < %d)", pic_len,
+                     MAX_IMAGE_SIZE);
+            break;
+          }
+
           memcpy(&picFromMesh[bytes_receive], rx_data.data, rx_data.size);
           // ESP_LOGI(MESH_TAG, "Reiceive image data[%d/%d]", bytes_receive, pic_len);
           bytes_receive += rx_data.size;
-
           if (bytes_receive == pic_len)
           {
             ESP_LOGI(MESH_TAG, "Receive enough bytes, start http/post");
             set_hcState(HTTP_CLIENT_POST);
           }
-        }
-        break;
-        case MESH_PROTO_JSON:
-        {
-          ESP_LOGI(MESH_TAG, "MESH_PROTO_JSON");
         }
         break;
         default:
@@ -198,10 +199,6 @@ void fsm_mesh()
     }
   }
   break;
-  case MESH_SEND:
-  {
-  }
-  break;
   case MESH_DO_NOTHING:
   {
   }
@@ -209,6 +206,7 @@ void fsm_mesh()
   default:
     break;
   }
+#endif // End #if USE_CAMERA
 }
 
 void mesh_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id,

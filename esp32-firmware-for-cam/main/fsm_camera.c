@@ -12,7 +12,7 @@
 
 #include "fsm_camera.h"
 
-const char *FSM_CAMERA_TAG = "CAMERA";
+const char *FSM_CAMERA_TAG = "CAMERA_TAG";
 
 #if USE_CAMERA
 CameraState cState = CAM_INIT;
@@ -30,10 +30,10 @@ char *get_cState(CameraState state)
   case CAM_INIT:
     return "CAM_INIT";
 
+  case CAM_TAKE_PIC:
+    return "CAM_TAKE_PIC";
   default:
-  {
     return UNKNOWN_STATE;
-  }
   }
 }
 
@@ -99,14 +99,15 @@ void fsm_camera()
         // when not JPEG. The performance of the ESP32-S series
         // has improved a lot, but JPEG mode always gives
         // better frame rates.
+        .frame_size = FRAMESIZE_VGA,
         // .frame_size = FRAMESIZE_QVGA,
-        .frame_size = FRAMESIZE_HD,
+        // .frame_size = FRAMESIZE_HD,
         // 0-63, for OV series camera sensors, lower number
         // means higher quality
         .jpeg_quality = 8,
         // When jpeg mode is used, if fb_count more than one, the
         // driver will work in continuous mode.
-        .fb_count = 2,
+        .fb_count = 1,
         .grab_mode = CAMERA_GRAB_WHEN_EMPTY,
     };
 
@@ -116,8 +117,6 @@ void fsm_camera()
     {
       isCamReady = 0;
       ESP_LOGE(FSM_CAMERA_TAG, "Camera Init Failed");
-      ESP_LOGI(FSM_CAMERA_TAG, "Re-Init Camera");
-      SCH_Add(reInitCamera, 5000, 5000);
       set_cState(CAM_DEINIT);
       break;
     }
@@ -136,6 +135,9 @@ void fsm_camera()
     ESP_LOGI(FSM_CAMERA_TAG, "Cam is ready");
     isCamReady = 1;
 
+    /* TODO: After taking picture, return to deepsleep mode, Fix this later */
+    // SCH_Add(startDeepSleep, 1000, ONCE);
+
     set_cState(CAM_DO_NOTHING);
   }
   break;
@@ -143,23 +145,32 @@ void fsm_camera()
   {
     if (isCamReady == 0)
     {
-      ESP_LOGE(FSM_CAMERA_TAG, "Camera is NOT ready");
+      // ESP_LOGE(FSM_CAMERA_TAG, "Camera is NOT ready");
+      // set_cState(CAM_DO_NOTHING);
       break;
     }
+#if USE_MESH
+    if (connected2Root == 0)
+    {
+      // ESP_LOGE(FSM_CAMERA_TAG, "Not connected to root");
+      // set_cState(CAM_DO_NOTHING);
+      break;
+    }
+#endif // End #if USE_MESH
 
     ESP_LOGI(FSM_CAMERA_TAG, "Taking picture...");
+    for (int i = 0; i < 4; i++)
+    {
+      pic = esp_camera_fb_get();
+      esp_camera_fb_return(pic);
+    }
+
     pic = esp_camera_fb_get();
     ESP_LOGI(FSM_CAMERA_TAG, "Picture taken! Its size was: %zu bytes", pic->len);
+
     isCamReady = 0;
 
-#if USE_MESH
-    set_mState(MESH_SEND_IMAGE);
     set_cState(CAM_DO_NOTHING);
-#elif USE_HTTP_CLIENT
-    set_hcState(HTTP_CLIENT_POST);
-#elif USE_CAMERA
-    set_cState(CAM_CLEAR_PIC);
-#endif
   }
   break;
   case CAM_DEINIT:
@@ -172,5 +183,17 @@ void fsm_camera()
   break;
   default:
     break;
+  }
+}
+
+void sendPic2Mesh()
+{
+  if (isCamReady)
+  {
+    set_cState(CAM_TAKE_PIC);
+  }
+  else
+  {
+    ESP_LOGW(FSM_CAMERA_TAG, "Camera is not ready");
   }
 }

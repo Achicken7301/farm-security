@@ -2,5 +2,5 @@
 #                     INCLUDE_DIRS "." "include")
 
 file(GLOB_RECURSE SRCS "*.c")
-idf_component_register(SRCS ${SRCS} "fsm_ap.c"
+idf_component_register(SRCS ${SRCS}  
                         INCLUDE_DIRS "." "include")

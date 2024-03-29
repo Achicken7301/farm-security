@@ -26,6 +26,8 @@ void rootCheck()
   }
 }
 
+void power_save_start() { set_psState(POWER_SAVE_START); }
+
 void app_main(void)
 {
 #if USE_MESH || USE_HTTP_SERVER || USE_TCP_SERVER || USE_STA
@@ -40,7 +42,7 @@ void app_main(void)
   timerInit();
 
   // SCH_Add(testMesh, 15000, 5000);
-  SCH_Add(rootCheck, 10000, 1000);
+  SCH_Add(rootCheck, 10000, 10);
 
 #if USE_TCP_SERVER
   set_tcpState(AP_INIT);
@@ -52,16 +54,21 @@ void app_main(void)
     fsm_ap();
     fsm_tcp_server_nonblocking();
 #endif
+
+#if USE_MESH
+    fsm_mesh();
+#endif
+
+#if USE_CAMERA
+    fsm_camera();
+#endif
+
 #if USE_HTTP_CLIENT || USE_STA
     fsm_sta();
     fsm_http_client();
 #endif
-#if USE_MESH
-    fsm_mesh();
-#endif
-#if USE_CAMERA
-    fsm_camera();
-#endif
+
+    fsm_power_save();
     SCH_Dispatch();
   }
 }
@@ -82,6 +89,8 @@ bool TIM0_GROUP1_Callback(void *arg)
   return 1;
 };
 
+#define ROOT_CPU_FREQUENCY 160
+
 /**
  * @brief Timer configuration
  *
@@ -94,7 +103,7 @@ void timerInit()
       .auto_reload = TIMER_AUTORELOAD_EN,
       .counter_dir = TIMER_COUNT_UP,
       .counter_en = TIMER_PAUSE,
-      .divider = 80, // 16bit: pre-scaler
+      .divider = ROOT_CPU_FREQUENCY, // 16bit: pre-scaler
       .intr_type = TIMER_INTR_LEVEL,
 
   };

@@ -3,6 +3,9 @@
 #include <driver/timer.h>
 #include <nvs_flash.h>
 
+#include "fsm_hc_501.h"
+#include "fsm_ir_led.h"
+#include "fsm_power_save.h"
 #include "global.h"
 #include "sch_task.h"
 #include "scheduler.h"

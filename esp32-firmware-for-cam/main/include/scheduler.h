@@ -14,17 +14,17 @@
 
 typedef struct
 {
-    void *pFn;
-    uint16_t delay;
-    uint16_t period;
-    uint8_t flag;
+  void *pFn;
+  uint16_t delay;
+  uint16_t period;
+  uint8_t flag;
 } vTask;
 
 typedef enum
 {
-    SCH_ERR_OK,
-    SCH_ERR_NOT_OK,
-    SCH_ERR_TASK_NOT_FOUND,
+  SCH_ERR_OK,
+  SCH_ERR_NOT_OK,
+  SCH_ERR_TASK_NOT_FOUND,
 } SchedulerError_t;
 
 vTask SCH_Tasks[SCH_MAX_TASK];
